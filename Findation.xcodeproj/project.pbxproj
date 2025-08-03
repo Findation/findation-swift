@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5508951B2E3F444000771FA8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5508951A2E3F444000771FA8 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		550894FE2E3F441100771FA8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		550894F02E3F441000771FA8 /* Findation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Findation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		550894FD2E3F441100771FA8 /* FindationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FindationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		550895072E3F441100771FA8 /* FindationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FindationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5508951A2E3F444000771FA8 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +80,7 @@
 		550894E72E3F441000771FA8 = {
 			isa = PBXGroup;
 			children = (
+				5508951A2E3F444000771FA8 /* README.md */,
 				550894F22E3F441000771FA8 /* Findation */,
 				550895002E3F441100771FA8 /* FindationTests */,
 				5508950A2E3F441100771FA8 /* FindationUITests */,
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5508951B2E3F444000771FA8 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
