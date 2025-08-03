@@ -8,15 +8,20 @@
 
 SwiftUI 앱 프로젝트에서 사용할 디렉토리 구조입니다. (변경 사항이 있다면 추가해주세요.)
 
+<pre lang="markdown"><code>
+```
 Findation/
-├── Constants/     
-├── Core/          
-│   └── Root/      
-├── Models/        
-├── Resources/     
-│   └── Assets/    
-├── Utils/         
+├── Constants/
+├── Core/
+│   └── Root/
+├── Models/
+├── Resources/
+│   └── Assets/
+├── Utils/
 └── FindationApp.swift
+```
+</code></pre>
+
 
 
 | 디렉토리/파일             | 설명                                                        |
