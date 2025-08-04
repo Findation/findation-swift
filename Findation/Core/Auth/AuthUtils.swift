@@ -42,25 +42,24 @@ class AppleAuthDelegate: NSObject, ASAuthorizationControllerDelegate, ASAuthoriz
             .connectedScenes
             .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
               let window = windowScene.windows.first(where: { $0.isKeyWindow }) else {
-            fatalError("🔴 presentationAnchor: No key window found")
+            fatalError("presentationAnchor: No key window found")
         }
         return window
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        print("✅ Apple 인증 성공")
         if let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
            let tokenData = credential.identityToken,
            let token = String(data: tokenData, encoding: .utf8) {
             completion(token)
         } else {
-            print("❌ 토큰 추출 실패")
+            print("토큰 추출 실패")
             completion(nil)
         }
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-        print("❌ Apple 인증 실패: \(error.localizedDescription)")
+        print("Apple 인증 실패: \(error.localizedDescription)")
         completion(nil)
     }
 }

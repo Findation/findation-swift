@@ -5,7 +5,6 @@ struct RootView: View {
 
     var body: some View {
         let isAuth = session.isAuthenticated
-        print("🟡 RootView body - isAuthenticated:", isAuth)
 
         return Group {
             if isAuth {
