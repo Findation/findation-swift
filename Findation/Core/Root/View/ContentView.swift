@@ -11,17 +11,7 @@ struct ContentView: View {
     @EnvironmentObject var session: SessionStore
     
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-            Button{
-                session.logout()
-            } label: {
-                Text("로그아웃")
-            }
-        }
+        FindationTabView()
         .onAppear{
             session.refreshTokenIfNeeded()
         }

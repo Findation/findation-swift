@@ -8,8 +8,31 @@
 import SwiftUI
 
 struct FindationTabView: View {
+    @State private var selectedTab = 0
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    VStack {
+                        Image(systemName: selectedTab == 0 ? "house.fill" : "house")
+                            .environment(\.symbolVariants, selectedTab == 0 ? .fill : .none)
+                        Text("홈")
+                            .foregroundColor(selectedTab == 0 ? .accentColor : .gray)
+                    }
+                }
+                .tag(0)
+            MyPageView()
+                .tabItem {
+                    VStack {
+                        Image(systemName: selectedTab == 1 ? "person.fill" : "person")
+                            .environment(\.symbolVariants, selectedTab == 0 ? .fill : .none)
+                        Text("마이페이지")
+                            .foregroundColor(selectedTab == 0 ? .accentColor : .gray)
+                    }
+                }
+                .tag(0)
+        }
     }
 }
 

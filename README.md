@@ -13,10 +13,15 @@ SwiftUI 앱 프로젝트에서 사용할 디렉토리 구조입니다. (변경 �
 Findation/
 ├── Constants/
 ├── Core/
-│   └── Root/
+│   ├── Root/
+│   ├── Auth/
+│   ├── Home/
+│   └── MyPage/
 ├── Models/
 ├── Resources/
 │   └── Assets/
+├── Managers/
+├── Helper/
 ├── Utils/
 └── FindationApp.swift
 ```
@@ -29,10 +34,15 @@ Findation/
 | `Constants/`              | 앱 전역에서 사용하는 상수 정의 (예: 색상, 문자열, 레이아웃 값 등) |
 | `Core/`                   | 핵심 기능을 담는 디렉토리 (기초 화면 구조, 네비게이션 등)          |
 | `Core/Root/`              | 앱의 루트 뷰 구성 (`ContentView` 등 메인 엔트리 포인트)           |
+| `Core/Auth/`              | 앱의 로그인과 관련된 뷰 구성          |
+| `Core/Home/`              | 앱의 홈과 관련된 뷰 구성         |
+| `Core/MyPage/`            | 앱의 마이페이지와 관련된 뷰 구성          |
 | `Models/`                 | 데이터 모델 정의 (예: `User`, `Routines` 등)             |
 | `Resources/`              | 리소스 관리 디렉토리 (Assets, 폰트, 로컬 JSON 등)               |
 | `Resources/Assets/`       | 이미지, 색상셋 등 Xcode Asset Catalog                         |
-| `Utils/`                  | 유틸리티 함수, 공용 헬퍼 클래스 등                              |
+| `Managers/`               | 특정 도메인, 기능에 대한 비지니스 로직 관리                              |
+| `Helper/`                 | 잡다한 기능들을 수행하는 유틸리티 함수                              |
+| `Utils/`                  | 공용 헬퍼 클래스, 모디파이어 등                              |
 
 
 
