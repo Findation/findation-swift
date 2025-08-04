@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var session: SessionStore
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -16,6 +18,8 @@ struct ContentView: View {
             Text("Hello, world!")
         }
         .padding()
+        .onAppear{
+        }
     }
 }
 
