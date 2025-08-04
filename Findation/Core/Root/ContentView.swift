@@ -16,9 +16,14 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
+            Button{
+                session.logout()
+            } label: {
+                Text("로그아웃")
+            }
         }
-        .padding()
         .onAppear{
+            session.refreshTokenIfNeeded()
         }
     }
 }

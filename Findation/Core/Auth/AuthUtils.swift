@@ -18,7 +18,7 @@ struct AppleAuthService {
         let controller = ASAuthorizationController(authorizationRequests: [request])
         let delegate = AppleAuthDelegate { identityToken in
              completion(identityToken)
-             sharedDelegate = nil  // 메모리 릭 방지
+             sharedDelegate = nil
          }
         
         controller.delegate = delegate
@@ -67,7 +67,6 @@ class AppleAuthDelegate: NSObject, ASAuthorizationControllerDelegate, ASAuthoriz
 struct AuthAPI {
     static func loginWithApple(identityToken: String, completion: @escaping (String?, String?) -> Void) {
         guard let url = URL(string: "https://api.findation.site/users/auth/social-login/") else { return }
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
