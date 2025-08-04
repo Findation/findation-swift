@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AuthView: View {
     @EnvironmentObject var session: SessionStore
+    @State private var showLoginError = false
     
     var body: some View {
         VStack {
@@ -26,13 +27,21 @@ struct AuthView: View {
                                 session.login(accessToken: access, refreshToken: refresh)
                             }
                         } else {
-                            print("백엔드 인증 실패")
-                            // 인증 실패시 Alert 구현해야함
+                            DispatchQueue.main.async {
+                                   showLoginError = true
+                               }
                         }
                     }
                 }
             }
         }
+        .alert(isPresented: $showLoginError) {
+                    Alert(
+                        title: Text("애플 로그인 실패"),
+                        message: Text("잠시 후 다시 시도해 주세요."),
+                        dismissButton: .default(Text("확인"))
+                    )
+                }
     }
 }
 
