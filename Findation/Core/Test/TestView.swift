@@ -35,7 +35,20 @@ struct TestView: View {
             }
 
             Button(action: {
-                postRoutine()
+                RoutineAPI.postRoutine(title: title, category: category, weekdays: weekdays) { result in
+                        switch result {
+                        case .success:
+                            title = ""
+                            category = ""
+                            weekdays = Array(repeating: false, count: 7)
+                            alertMessage = "루틴 등록 성공!"
+                            showAlert = true
+                        case .failure:
+                            alertMessage = "루틴 등록 실패!"
+                            showAlert = true
+                        }
+                    }
+                
             }) {
                 if isSubmitting {
                     ProgressView()
@@ -50,7 +63,7 @@ struct TestView: View {
             .disabled(isSubmitting)
         }
         .onAppear{
-            getRoutine()
+            RoutineAPI.getRoutine()
         }
         .padding()
         .alert("결과", isPresented: $showAlert) {
@@ -58,64 +71,5 @@ struct TestView: View {
         } message: {
             Text(alertMessage)
         }
-    }
-    
-    func getRoutine() {
-        guard let token = KeychainHelper.load(forKey: "accessToken") else {
-            print("Cannot Find an Access Token")
-            return
-        }
-
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(token)"
-        ]
-        
-        let decoder = DateDecoderFactory.iso8601WithFractionalSecondsDecoder()
-
-        AF.request(API.Routines.routineList, method: .get, headers: headers)
-            .validate()
-            .responseDecodable(of: [RoutineResponse].self, decoder: decoder) { response in
-                switch response.result {
-                case .success(let routineResponse):
-                    print(routineResponse)
-                case .failure(let error):
-                    print("에러:", error)
-                }
-            }
-    }
-    
-    func postRoutine() {
-        guard let token = KeychainHelper.load(forKey: "accessToken") else {
-            print("Cannot Find an Access Token")
-            return
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(token)"
-        ]
-        
-        let parameters: [String: Any] = [
-            "title": title,
-            "category": category,
-            "is_repeated": calculateIsRepeatedBitmask(weekdays)
-        ]
-        
-        AF.request(API.Routines.routineList, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
-            .validate()
-            .response { response in
-                switch response.result {
-                case .success(_):
-                   print("success")
-                    self.title = ""
-                    self.category = ""
-                    self.weekdays = Array(repeating: false, count: 7)
-                    self.alertMessage = "루틴 등록 성공!"
-                    self.showAlert = true
-                case .failure(_):
-                   print("failure")
-                    self.alertMessage = "루틴 등록 실패!"
-                   self.showAlert = true
-                }
-            }
     }
 }
