@@ -23,6 +23,7 @@ Findation/
 ├── Managers/
 ├── Helper/
 ├── Utils/
+│   └── ViewModifiers/
 └── FindationApp.swift
 ```
 </code></pre>
