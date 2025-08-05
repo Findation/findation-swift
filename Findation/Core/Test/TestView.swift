@@ -1,4 +1,5 @@
 import SwiftUI
+import Alamofire
 
 struct TestView: View {
     @State private var title = ""
@@ -34,7 +35,7 @@ struct TestView: View {
             }
 
             Button(action: {
-                submitRoutine()
+                postRoutine()
             }) {
                 if isSubmitting {
                     ProgressView()
@@ -60,95 +61,61 @@ struct TestView: View {
     }
     
     func getRoutine() {
-        guard let url = URL(string: "https://api.findation.site/routines/") else { return }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        if let accessToken = KeychainHelper.load(forKey: "accessToken") {
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        } else {
-            print("accessToken이 없습니다.")
+        guard let token = KeychainHelper.load(forKey: "accessToken") else {
+            print("Cannot Find an Access Token")
             return
         }
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("네트워크 오류:", error.localizedDescription)
-                return
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(token)"
+        ]
+        
+        let decoder = DateDecoderFactory.iso8601WithFractionalSecondsDecoder()
+
+        AF.request(API.Routines.routineList, method: .get, headers: headers)
+            .validate()
+            .responseDecodable(of: [RoutineResponse].self, decoder: decoder) { response in
+                switch response.result {
+                case .success(let routineResponse):
+                    print(routineResponse)
+                case .failure(let error):
+                    print("에러:", error)
+                }
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("HTTP 응답이 아닙니다.")
-                return
-            }
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                print("서버 응답 상태 코드: \(httpResponse.statusCode)")
-                return
-            }
-            
-            guard let data = data else {
-                print("데이터가 없습니다.")
-                return
-            }
-            
-            do {
-                let json = try JSONSerialization.jsonObject(with: data, options: [])
-                print("루틴 조회 성공:", json)
-            } catch {
-                print("JSON 파싱 실패:", error)
-            }
-        }.resume()
     }
-
-    func submitRoutine() {
-        guard let url = URL(string: "https://api.findation.site/routines/") else { return }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        if let accessToken = KeychainHelper.load(forKey: "accessToken") {
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        } else {
-            print("accessToken이 없습니다.")
+    
+    func postRoutine() {
+        guard let token = KeychainHelper.load(forKey: "accessToken") else {
+            print("Cannot Find an Access Token")
+            return
         }
-
-        let body: [String: Any] = [
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(token)"
+        ]
+        
+        let parameters: [String: Any] = [
             "title": title,
             "category": category,
             "is_repeated": calculateIsRepeatedBitmask(weekdays)
         ]
-
-        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else { return }
-        request.httpBody = httpBody
-
-        isSubmitting = true
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                isSubmitting = false
-            }
-
-            if let error = error {
-                DispatchQueue.main.async {
-                    alertMessage = "네트워크 오류: \(error.localizedDescription)"
-                    showAlert = true
+        
+        AF.request(API.Routines.routineList, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .validate()
+            .response { response in
+                switch response.result {
+                case .success(_):
+                   print("success")
+                    self.title = ""
+                    self.category = ""
+                    self.weekdays = Array(repeating: false, count: 7)
+                    self.alertMessage = "루틴 등록 성공!"
+                    self.showAlert = true
+                case .failure(_):
+                   print("failure")
+                    self.alertMessage = "루틴 등록 실패!"
+                   self.showAlert = true
                 }
-                return
             }
-
-            guard let httpResponse = response as? HTTPURLResponse else { return }
-
-            DispatchQueue.main.async {
-                if httpResponse.statusCode == 201 {
-                    alertMessage = "루틴 등록 성공!"
-                } else {
-                    alertMessage = "등록 실패 (\(httpResponse.statusCode))"
-                }
-                showAlert = true
-            }
-        }.resume()
     }
 }

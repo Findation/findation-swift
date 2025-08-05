@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Routine: Codable, Identifiable {
+struct RoutineResponse: Codable, Identifiable {
     let id: UUID
     let title: String
     let category: String
