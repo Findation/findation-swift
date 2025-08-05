@@ -42,7 +42,7 @@ Findation/
 | `Resources/Assets/`       | 이미지, 색상셋 등 Xcode Asset Catalog                         |
 | `Managers/`               | 특정 도메인, 기능에 대한 비지니스 로직 관리                              |
 | `Helper/`                 | 잡다한 기능들을 수행하는 유틸리티 함수                              |
-| `Utils/`                  | 공용 헬퍼 클래스, 모디파이어 등                              |
+| `Utils/`                  | 공용 헬퍼 클래스, 모디파이어, API 등                              |
 
 
 ## 📦 사용된 서드파티 패키지
