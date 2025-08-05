@@ -6,6 +6,7 @@
 //
 import AuthenticationServices
 import Foundation
+import Alamofire
 
 struct AppleAuthService {
     static var sharedDelegate: AppleAuthDelegate?
@@ -66,32 +67,26 @@ class AppleAuthDelegate: NSObject, ASAuthorizationControllerDelegate, ASAuthoriz
 
 struct AuthAPI {
     static func loginWithApple(identityToken: String, completion: @escaping (String?, String?) -> Void) {
-        guard let url = URL(string: "https://api.findation.site/users/auth/social-login/") else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
+        let parameters: [String: Any] = [
             "provider": "apple",
             "credential": [
                 "identityToken": identityToken
             ]
         ]
         
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-        URLSession.shared.dataTask(with: request) { data, response, _ in
-            guard
-                let data = data,
-                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let access = json["access"] as? String,
-                let refresh = json["refresh"] as? String
-            else {
-                completion(nil, nil)
-                return
-            }
-
-            completion(access, refresh)
-        }.resume()
+        AF.request(API.Auth.socialLogin,
+                           method: .post,
+                           parameters: parameters,
+                           encoding: JSONEncoding.default,
+                           headers: ["Content-Type": "application/json"])
+                .validate()
+                .responseDecodable(of: UserResponse.self) { response in
+                    switch response.result {
+                    case .success(let token):
+                        completion(token.access, token.refresh)
+                    case .failure(_):
+                        completion(nil, nil)
+                    }
+                }
     }
 }

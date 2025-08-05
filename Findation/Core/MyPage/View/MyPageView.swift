@@ -8,10 +8,15 @@
 import SwiftUI
 
 struct MyPageView: View {
+    @EnvironmentObject var session: SessionStore
+    
     var body: some View {
         VStack {
             Text("Hello, World!")
             Text("MyPageView")
+            Button("Logout") {
+                self.session.logout()
+            }
         }
     }
 }
