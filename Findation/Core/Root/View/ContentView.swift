@@ -13,6 +13,7 @@ struct ContentView: View {
     var body: some View {
         FindationTabView()
         .onAppear{
+            //session.logout()
             session.refreshTokenIfNeeded()
         }
     }

@@ -44,7 +44,7 @@ class SessionStore: ObservableObject {
 
     func refreshTokenIfNeeded() {
         guard let savedRefreshToken = KeychainHelper.load(forKey: REFRESH_TOKEN) else {
-            // 에러 처리 필요함
+            self.logout()
             return
         }
         
