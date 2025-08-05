@@ -10,23 +10,25 @@ import SwiftUI
 struct AppleLoginButton: View {
     @EnvironmentObject var session: SessionStore
     @Binding var showLoginError: Bool
+    @Binding var isLoggedIn: Bool
     
     var body: some View {
         Button(action: {
+            isLoggedIn = true
+
             AppleAuthService.performAppleLogin { identityToken in
                 guard let token = identityToken else {
                     return
                 }
 
                 AuthAPI.loginWithApple(identityToken: token) { access, refresh in
-                    if let access, let refresh {
-                        DispatchQueue.main.async {
+                    DispatchQueue.main.async {
+                        isLoggedIn = false
+                        if let access, let refresh {
                             session.login(accessToken: access, refreshToken: refresh)
+                        } else {
+                            showLoginError = true
                         }
-                    } else {
-                        DispatchQueue.main.async {
-                               showLoginError = true
-                           }
                     }
                 }
             }
@@ -56,6 +58,6 @@ struct AppleLoginButton: View {
 }
 
 #Preview {
-    AppleLoginButton(showLoginError: .constant(false))
+    AppleLoginButton(showLoginError: .constant(false), isLoggedIn: .constant(false))
         .environmentObject(SessionStore())
 }

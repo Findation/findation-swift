@@ -9,16 +9,26 @@ import SwiftUI
 
 struct AuthView: View {
     @State private var showLoginError = false
+    @State private var isLoggingIn = false
     @EnvironmentObject var session: SessionStore
     
     var body: some View {
-        VStack {
-            Spacer()
-            Image(systemName: "apple.logo").resizable().frame(width: 90, height: 110).contentMargins(.bottom, 30)
-            Text("Findation - App Name")
-            Spacer()
-            AppleLoginButton(showLoginError: $showLoginError)
-            Spacer()
+        ZStack {
+            VStack {
+                Spacer()
+                Image(systemName: "apple.logo").resizable().frame(width: 90, height: 110).contentMargins(.bottom, 30)
+                Text("Findation - App Name")
+                Spacer()
+                AppleLoginButton(showLoginError: $showLoginError, isLoggedIn: $isLoggingIn)
+                Spacer()
+            }
+            if isLoggingIn {
+                ProgressView()
+                    .scaleEffect(2.0)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                    .padding(20)
+                    .cornerRadius(10)
+            }
         }
         .alert(isPresented: $showLoginError) {
                     Alert(
