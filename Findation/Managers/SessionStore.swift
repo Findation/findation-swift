@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import Alamofire
 
 class SessionStore: ObservableObject {
     @Published var isAuthenticated: Bool = false
@@ -19,7 +20,7 @@ class SessionStore: ObservableObject {
     }
     
     func checkAuthentication() {
-           if let token = KeychainHelper.load(forKey: ACCESS_TOKEN) {
+        if KeychainHelper.load(forKey: ACCESS_TOKEN) != nil {
                // 옵션: 만료 검사 로직도 가능 (ex. decode JWT, exp 체크)
                isAuthenticated = true
            } else {
@@ -47,29 +48,25 @@ class SessionStore: ObservableObject {
             return
         }
         
-        
-        
-        var request = URLRequest(url: URL(string: "https://api.findation.site/users/auth/token/refresh/")!)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONEncoder().encode(["refresh": savedRefreshToken])
-        
-        URLSession.shared.dataTask(with: request) { data, response, _ in
-            guard
-                let data = data,
-                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let newAccess = json["access"] as? String,
-                let newRefresh = json["refresh"] as? String
-            else {
-                // 에러 처리 필요함
-                return
+        let params = ["refresh": savedRefreshToken]
+
+        AF.request(API.Auth.tokenRefresh, method: .post, parameters: params, encoder: JSONParameterEncoder.default)
+            .validate()
+            .responseDecodable(of: RefreshResponse.self) { response in
+                switch response.result {
+                case .success(let data):
+                    KeychainHelper.save(data.access, forKey: self.ACCESS_TOKEN)
+                    KeychainHelper.save(data.refresh, forKey: self.REFRESH_TOKEN)
+                    DispatchQueue.main.async {
+                        self.isAuthenticated = true
+                        //completion(true)
+                    }
+                case .failure(_):
+                    DispatchQueue.main.async {
+                        self.logout()
+                        //completion(false)
+                    }
+                }
             }
-            
-            KeychainHelper.save(newAccess, forKey: self.ACCESS_TOKEN)
-            KeychainHelper.save(newRefresh, forKey: self.REFRESH_TOKEN)
-//            DispatchQueue.main.async {
-//                //completion(true)
-//            }
-        }.resume()
     }
 }

@@ -20,9 +20,9 @@ class KeychainHelper {
             let status = SecItemAdd(query as CFDictionary, nil)
 
             if status == errSecSuccess {
-                print("Keychain 저장 성공")
+                // print("Keychain 저장 성공")
             } else {
-                print("저장 실패, status: \(status)")
+                // print("저장 실패, status: \(status)")
             }
         }
     }
