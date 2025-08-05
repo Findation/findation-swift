@@ -8,32 +8,17 @@
 import SwiftUI
 
 struct AuthView: View {
-    @EnvironmentObject var session: SessionStore
     @State private var showLoginError = false
+    @EnvironmentObject var session: SessionStore
     
     var body: some View {
         VStack {
-            Text("Auth View").padding(.bottom, 20)
-            
-            Button("Apple로 로그인") {
-                AppleAuthService.performAppleLogin { identityToken in
-                    guard let token = identityToken else {
-                        return
-                    }
-
-                    AuthAPI.loginWithApple(identityToken: token) { access, refresh in
-                        if let access, let refresh {
-                            DispatchQueue.main.async {
-                                session.login(accessToken: access, refreshToken: refresh)
-                            }
-                        } else {
-                            DispatchQueue.main.async {
-                                   showLoginError = true
-                               }
-                        }
-                    }
-                }
-            }
+            Spacer()
+            Image(systemName: "apple.logo").resizable().frame(width: 90, height: 110).contentMargins(.bottom, 30)
+            Text("Findation - App Name")
+            Spacer()
+            AppleLoginButton(showLoginError: $showLoginError)
+            Spacer()
         }
         .alert(isPresented: $showLoginError) {
                     Alert(
