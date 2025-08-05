@@ -7,12 +7,11 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct MyPageView: View {
     @EnvironmentObject var session: SessionStore
     
     var body: some View {
         VStack {
-            StopAlertView()
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
@@ -25,5 +24,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    MyPageView()
 }

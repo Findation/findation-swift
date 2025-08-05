@@ -18,6 +18,7 @@ Findation/
 ├── Resources/
 │   └── Assets/
 ├── Utils/
+│   └── ViewModifiers/
 └── FindationApp.swift
 ```
 </code></pre>
