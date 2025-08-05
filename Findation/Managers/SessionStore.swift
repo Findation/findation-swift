@@ -36,11 +36,11 @@ class SessionStore: ObservableObject {
         }
     }
 
-       func logout() {
-           KeychainHelper.delete(forKey: ACCESS_TOKEN)
-           KeychainHelper.delete(forKey: REFRESH_TOKEN)
-           isAuthenticated = false
-       }
+    func logout() {
+        KeychainHelper.delete(forKey: ACCESS_TOKEN)
+        KeychainHelper.delete(forKey: REFRESH_TOKEN)
+        isAuthenticated = false
+    }
 
     func refreshTokenIfNeeded() {
         guard let savedRefreshToken = KeychainHelper.load(forKey: REFRESH_TOKEN) else {
