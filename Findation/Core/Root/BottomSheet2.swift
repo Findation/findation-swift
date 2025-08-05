@@ -60,11 +60,16 @@ struct RoutineSheetView: View {
                     .font(.system(size: 24, weight: .bold))
                 
                 HStack{
-                    Spacer()
-                    Button("완료") {
+                    Button("취소") {
                         dismiss()
-                        
                     }
+                    
+                    Spacer()
+                    
+                    Button("완료") {
+                        dismiss() // 지금은 그냥 나가지는 상태임! 데이터베이스로 연결하기 필요
+                    }
+                    
                     .disabled(taskText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .foregroundColor(taskText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .gray : .blue)
                 }
