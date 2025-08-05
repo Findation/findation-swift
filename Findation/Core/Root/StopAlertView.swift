@@ -9,7 +9,7 @@ struct StopAlertView: View {
             VStack(spacing:12) {
                 VStack(spacing:2){
                     Text("활동을 완료할까요?")
-                    Text("유기화학 2단원 복습")
+                    Text("유기화학 2단원 복습") //
                         .foregroundColor(Color("Primary"))
                 }
                 .bodytext()
@@ -20,7 +20,7 @@ struct StopAlertView: View {
 
                 HStack {
                     Button(action: {
-                        // 예: 루트로 이동 (여기선 따로 로직 작성 필요)
+                        // 루트로 이동
                     }) {
                         Text("그냥 완료하기")
                             .frame(width: 140, height:55)
@@ -31,7 +31,7 @@ struct StopAlertView: View {
                     }
 
                     Button(action: {
-                        // 예: 카메라 화면으로 이동
+                        // 카메라 화면으로 이동
                     }) {
                         Text("사진 인증하기")
                             .frame(width: 140, height:55)
