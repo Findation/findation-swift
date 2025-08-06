@@ -7,7 +7,8 @@
 
 import Foundation
 
-func calculateIsRepeatedBitmask(_ weekdays: [Bool]) -> Int {
+func calculateIsRepeatedBitmask(_ weekdays: [Bool]
+) -> Int {
     var result = 0
     for (index, selected) in weekdays.enumerated() {
         if selected {
