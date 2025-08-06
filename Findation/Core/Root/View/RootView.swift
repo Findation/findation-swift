@@ -7,11 +7,12 @@ struct RootView: View {
         let isAuth = session.isAuthenticated
 
         return Group {
-            if isAuth {
-                ContentView()
-            } else {
-                AuthView()
-            }
+            ContentView()
+//            if isAuth {
+//                ContentView()
+//            } else {
+//                AuthView()
+//            }
         }
     }
 }
