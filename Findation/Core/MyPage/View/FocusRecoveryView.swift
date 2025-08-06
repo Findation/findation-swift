@@ -31,8 +31,8 @@ struct FocusRecoveryView: View {
 // struct SmoothGraphView: View {
 //      let dataPoints: [CGFloat]
 
-// 외부에서 데이터를 받아오는 거 구현하는 부분은 일단 공백으로 둘게요!
-// 벡엔드 구현되면 다시 해보겠습니다! 그 때 하는 게 좋을 거 같아욥
+// 외부에서 데이터를 받아와서 그래프 나타나는 부분은 공백으로 둘게요!
+// 벡엔드 구현되면 다시 해보겠습니다!
 
         
         
