@@ -13,7 +13,7 @@ struct FocusRecoveryView: View {
         
         VStack(alignment: .leading){
             Text("집중력 회복")
-                .font(.body)
+                .font(.title3)
                 .foregroundColor(.black)
                 .padding(.top, 17)
                 .padding(.leading, 18)

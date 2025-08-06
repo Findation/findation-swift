@@ -9,6 +9,13 @@ import SwiftUI
 
 struct CollectView : View{
     let weekdays : [String] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+    private var currentMonthText: String {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US")
+            formatter.dateFormat = "LLLL"
+            return formatter.string(from: date)
+        }
     
     private let calendar = Calendar.current  // 시스템의 달력 설정 가져옴 (양력 등)
     private let date = Date()      // 지금 현재 시각 (오늘 날짜)
@@ -31,9 +38,8 @@ struct CollectView : View{
         // 요일을 "월요일:0 ~ 일요일:6"로 바꾸기 위한 계산
     }
     
-    private let columns = Array(repeating: GridItem(.fixed(40), spacing: 8), count: 7)
+    private let columns = Array(repeating: GridItem(.fixed(40), spacing: 7), count: 7)
     // 달력을 만들기 위한 7열짜리 열 배열 정의 (월~일 총 7일)
-    
     
     var body: some View {
         
@@ -44,27 +50,34 @@ struct CollectView : View{
             
             
             VStack(alignment: .leading){
-                Text("모아보기")
-                    .font(.body)
-                    .foregroundColor(.black)
-                    .padding(.top, 17)
-                    .padding(.leading, 18)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                    .padding(.bottom, 20)
-                
-                
                 HStack{
+                    
+                    Text("모아보기")
+                        .font(.body)
+                        .foregroundColor(.black)
+                        .padding(.top, 17)
+                        .padding(.leading, 18)
+                        
+                    Spacer()
+                    
+                    Text(currentMonthText)
+                        .font(.body)
+                        .foregroundColor(.blue)
+                        .padding(.trailing, 23)
+                        .padding(.top, 17)
+                        
+                    
+                }
+                
+                LazyVGrid(columns: columns, spacing: 8) {
                     ForEach(weekdays, id: \.self) { day in
                         Text(day)
                             .font(.system(size: 13))
-                            .foregroundColor(.gray)
-                            .padding(.leading, 18)
+                            .foregroundColor(.black)
+                            .opacity(0.7)
                     }
                 }
-                //일단보류...... 아래랑 한 번에 정렬할 수 있는지 찾아보기
-                
-                //TODO: 달력 넣기
+                .padding(.bottom, 5)
                 
                 LazyVGrid(columns: columns, spacing: 8) {
                     
@@ -82,17 +95,17 @@ struct CollectView : View{
                         }
                     }
                 }
-                        
-                    } // VStack 닫는괄호
-                    .frame(width: 353, height: 350)
-                    .background(Color.white)
-                    .cornerRadius(10)
-                } // ZStack 닫는 괄호
+                .padding(.bottom, 43)
                 
             }
+            .frame(width: 353, height: 350)
+            .background(Color.white)
+            .cornerRadius(10)
+        }
         
-    
+    }
 }
+
 #Preview {
     CollectView()
 }
