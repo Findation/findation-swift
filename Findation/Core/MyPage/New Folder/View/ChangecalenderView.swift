@@ -37,11 +37,16 @@ struct ChangeCalendarView: View {
     
     var body: some View {
         
+        let offset = CalendarHelper.firstWeekdayOffset(for: currentDate)
+        let days = CalendarHelper.daysInMonth(for: currentDate)
+        let totalCells = offset + days
+        let numRows = Int(ceil(Double(totalCells) / 7.0))
+        
         ZStack{
             Color.blue
                 .edgesIgnoringSafeArea(.all)
             
-            VStack {
+            VStack(spacing: 0) {
                 HStack {
                     Button {
                         changeMonth(by: -1)
@@ -67,17 +72,19 @@ struct ChangeCalendarView: View {
                         Text(day)
                             .font(.caption)
                             .foregroundColor(.black)
+                            
                         
                     }
                 }
+                .padding(.bottom, 7)
                 
                 LazyVGrid(columns: columns, spacing: 8) {
-                    let offset = CalendarHelper.firstWeekdayOffset(for: currentDate)
-                    let days = CalendarHelper.daysInMonth(for: currentDate)
                     
+
                     ForEach(0..<(offset + days), id: \.self) { index in
                         if index < offset {
-                            Color.clear.frame(width: 40, height: 40)
+                            Color.clear
+                            .frame(width: 40, height: 40)
                         } else {
                             let day = index - offset + 1
                             Text("\(day)")
@@ -88,11 +95,12 @@ struct ChangeCalendarView: View {
                         }
                     }
                 }
+                .padding(.bottom, 43)
                 
-                Spacer()
+                Spacer(minLength: 0)
             }
 
-            .frame(width: 353, height: 350)
+            .frame(width: 353, height: numRows == 6 ? 390 : 350)
             .background(Color.white)
             .cornerRadius(10)
         }
