@@ -51,7 +51,7 @@ struct CollectView : View{
             VStack(alignment: .leading){
                 HStack{
                     Spacer()
-                    
+                    Button("")
                     Text(currentMonthText)
                         .font(.body)
                         .foregroundStyle(Color("Primary"))
