@@ -1,20 +1,18 @@
-//
-//  FindationApp.swift
-//  Findation
-//
-//  Created by Yoy0z-maps on 8/3/25.
-//
-
 import SwiftUI
 
 @main
 struct FindationApp: App {
-    @StateObject private var session = SessionStore()
+//    @StateObject private var session = SessionStore()
+    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding = false
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environmentObject(session)
+            if hasSeenOnboarding {
+                FindationTabView()
+            } else {
+                OnboardingView()
+                   
+            }
         }
     }
 }
