@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		550713872E40F62100A9A265 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 550713862E40F62100A9A265 /* Alamofire */; };
+		4C6891542E41CC8E00317AFA /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 4C6891532E41CC8E00317AFA /* Alamofire */; };
 		5508951B2E3F444000771FA8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5508951A2E3F444000771FA8 /* README.md */; };
 		550895DA2E40814B00771FA8 /* .gitignore.md in Resources */ = {isa = PBXBuildFile; fileRef = 550895D92E40814B00771FA8 /* .gitignore.md */; };
 /* End PBXBuildFile section */
@@ -60,7 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				550713872E40F62100A9A265 /* Alamofire in Frameworks */,
+				4C6891542E41CC8E00317AFA /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,7 +123,7 @@
 			);
 			name = Findation;
 			packageProductDependencies = (
-				550713862E40F62100A9A265 /* Alamofire */,
+				4C6891532E41CC8E00317AFA /* Alamofire */,
 			);
 			productName = Findation;
 			productReference = 550894F02E3F441000771FA8 /* Findation.app */;
@@ -208,7 +208,7 @@
 			mainGroup = 550894E72E3F441000771FA8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				550713852E40F62100A9A265 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				4C6891522E41CC8E00317AFA /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 550894F12E3F441000771FA8 /* Products */;
@@ -415,7 +415,7 @@
 				CODE_SIGN_ENTITLEMENTS = Findation/Findation.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GQM6B63P8T;
+				DEVELOPMENT_TEAM = 28QF3XB657;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -428,7 +428,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Yoy0z-maps.Findation";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ByunGwanYoung.Findation2025;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -448,7 +448,7 @@
 				CODE_SIGN_ENTITLEMENTS = Findation/Findation.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GQM6B63P8T;
+				DEVELOPMENT_TEAM = 28QF3XB657;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -461,7 +461,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Yoy0z-maps.Findation";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ByunGwanYoung.Findation2025;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -587,7 +587,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		550713852E40F62100A9A265 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+		4C6891522E41CC8E00317AFA /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
 			requirement = {
@@ -598,9 +598,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		550713862E40F62100A9A265 /* Alamofire */ = {
+		4C6891532E41CC8E00317AFA /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 550713852E40F62100A9A265 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			package = 4C6891522E41CC8E00317AFA /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */

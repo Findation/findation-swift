@@ -1,6 +1,13 @@
+//
+//  FriendsAddView.swift
+//  again
+//
+//  Created by 변관영 on 8/6/25.
+//
+
 import SwiftUI
 
-struct MyPageScreen: View {
+struct MyPage: View {
     @State private var fishBobbingOffset: CGFloat = 0
 
     let fishtankHeight: CGFloat = 705

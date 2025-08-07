@@ -12,7 +12,7 @@ struct FindationTabView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView()
+            MainView()
                 .tabItem {
                     VStack {
                         Image(systemName: selectedTab == 0 ? "house.fill" : "house")
@@ -22,7 +22,7 @@ struct FindationTabView: View {
                     }
                 }
                 .tag(0)
-            MyPageView()
+            MyPage()
                 .tabItem {
                     VStack {
                         Image(systemName: selectedTab == 1 ? "person.fill" : "person")
