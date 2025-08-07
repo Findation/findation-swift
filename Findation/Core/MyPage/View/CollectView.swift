@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct CollectView : View{
-    let weekdays : [String] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    let weekdays : [String] = ["월", "화", "수", "목", "금", "토", "일"]
 
     private var currentMonthText: String {
             let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US")
+            formatter.locale = Locale(identifier: "ko_Kr") // 한글로 나오도록 바꾸기
             formatter.dateFormat = "LLLL"
             return formatter.string(from: date)
         }
@@ -44,30 +44,24 @@ struct CollectView : View{
     var body: some View {
         
         ZStack{
-            Color.blue
-            // Color. clear << 메인에서 합칠 때 윗줄 지우기
+          Color.blue
                 .edgesIgnoringSafeArea(.all)
             
             
             VStack(alignment: .leading){
                 HStack{
-                    
-                    Text("모아보기")
-                        .font(.body)
-                        .foregroundColor(.black)
-                        .padding(.top, 17)
-                        .padding(.leading, 18)
-                        
                     Spacer()
                     
                     Text(currentMonthText)
                         .font(.body)
-                        .foregroundColor(.blue)
-                        .padding(.trailing, 23)
-                        .padding(.top, 17)
-                        
+                        .foregroundStyle(Color("Primary"))
+                        .padding(.top, 13)
+                       
                     
+                    Spacer()
                 }
+                
+                .padding(.bottom, 10)
                 
                 LazyVGrid(columns: columns, spacing: 8) {
                     ForEach(weekdays, id: \.self) { day in
