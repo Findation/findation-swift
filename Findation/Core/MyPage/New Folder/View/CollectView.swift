@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct CollectView : View{
+    
+    
     let weekdays : [String] = ["월", "화", "수", "목", "금", "토", "일"]
-
+    
     private var currentMonthText: String {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "ko_Kr") // 한글로 나오도록 바꾸기
-            formatter.dateFormat = "M월"
-            return formatter.string(from: date)
-        }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_Kr")
+        formatter.dateFormat = "M월"
+        return formatter.string(from: date)
+    }
     
     private let calendar = Calendar.current  // 시스템의 달력 설정 가져옴 (양력 등)
     private let date = Date()      // 지금 현재 시각 (오늘 날짜)
@@ -44,7 +46,7 @@ struct CollectView : View{
     var body: some View {
         
         ZStack{
-          Color.blue
+            Color.blue
                 .edgesIgnoringSafeArea(.all)
             
             
@@ -52,11 +54,24 @@ struct CollectView : View{
                 HStack{
                     Spacer()
                     
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "arrowtriangle.left.fill")
+                            .padding(.top, 13)
+                    }
+                    
                     Text(currentMonthText)
                         .font(.body)
                         .foregroundStyle(Color("Primary"))
                         .padding(.top, 13)
-                       
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "arrowtriangle.right.fill")
+                            .padding(.top, 13)
+                    }
                     
                     Spacer()
                 }
@@ -103,3 +118,4 @@ struct CollectView : View{
 #Preview {
     CollectView()
 }
+
