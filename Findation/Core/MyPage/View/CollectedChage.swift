@@ -34,6 +34,22 @@ struct CollectedChangeView: View {
         
     }
     
+    private func TodayDate() {
+        currentDate = Date()
+    }
+    
+    private func dateFor(day: Int) -> Date? {
+        var comps = calendar.dateComponents([.year, .month], from: currentDate)
+        comps.day = day
+        return calendar.date(from: comps)
+    }
+
+    private func isToday(day: Int) -> Bool {
+        guard let d = dateFor(day: day) else { return false }
+        return calendar.isDate(d, inSameDayAs: Date())
+    }
+
+    
     
     var body: some View {
         
@@ -48,10 +64,14 @@ struct CollectedChangeView: View {
             
             VStack(spacing: 0) {
                 HStack {
+                    
+                    
                     Button {
                         changeMonth(by: -1)
                     } label: {
                         Image(systemName: "arrowtriangle.left.fill")
+                            .foregroundStyle(.primary)
+                            .padding(.leading, 136)
                     }
                     
                     
@@ -59,27 +79,39 @@ struct CollectedChangeView: View {
                         .font(.body)
                         .foregroundColor(.black)
                     
+                    
                     Button {
                         changeMonth(by: 1)
                     } label: {
                         Image(systemName: "arrowtriangle.right.fill")
+                            .foregroundStyle(.primary)
                     }
                     
+                    Spacer()
+                    
                     Button {
-                        changeMonth(by: 0)
+                        TodayDate()
                     } label : {
                         Text("오늘")
-                            .font(.body)
+                            .font(.caption)
+                            .foregroundStyle(.primary)
+                            .foregroundColor(Color.blue)
+                                    .frame(width: 40, height: 22)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(11)
+                            
                     }
                 }
-                .padding()
+                .padding(.top, 17)
+                .padding(.trailing, 16)
+                .padding(.bottom, 16)
                 
                 LazyVGrid(columns: columns, spacing: 8) {
                     ForEach(weekdays, id: \.self) { day in
                         Text(day)
                             .font(.caption)
                             .foregroundColor(.black)
-                            
+                        
                         
                     }
                 }
@@ -87,34 +119,47 @@ struct CollectedChangeView: View {
                 
                 LazyVGrid(columns: columns, spacing: 8) {
                     
-
+                    
                     ForEach(0..<(offset + days), id: \.self) { index in
                         if index < offset {
                             Color.clear
-                            .frame(width: 40, height: 40)
+                                .frame(width: 40, height: 40)
                         } else {
                             let day = index - offset + 1
-                            Text("\(day)")
-                                .frame(width: 40, height: 40)
-                                .foregroundColor(.white)
-                                .background(Color.gray.opacity(0.3))
-                                .clipShape(Circle())
-                        }
+                            ZStack {
+                                Text("\(day)")
+                                    .foregroundColor(.white)
+                                    .frame(width: 40, height: 40)
+                                    .background(Color.gray.opacity(0.3))
+                                    .clipShape(Circle())
+                            }
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.blue, lineWidth: 2)
+                                    .frame(width: 40, height: 40)
+                                    .opacity(isToday(day: day) ? 1 : 0)
+                            )
+}
                     }
                 }
                 .padding(.bottom, 43)
                 
                 Spacer(minLength: 0)
             }
-
+            
             .frame(width: 353, height: numRows == 6 ? 390 : 350)
             .background(Color.white)
             .cornerRadius(10)
+            .frame(maxHeight: .infinity, alignment: .top) 
         }
+        
     }
+
 }
 
 
 #Preview {
     CollectedChangeView()
 }
+
+
