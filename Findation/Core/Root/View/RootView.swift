@@ -1,18 +1,20 @@
 import SwiftUI
 
 struct RootView: View {
+    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding = false
     @EnvironmentObject var session: SessionStore
 
     var body: some View {
-        let isAuth = session.isAuthenticated
-
-        return Group {
-            ContentView()
-//            if isAuth {
-//                ContentView()
-//            } else {
-//                AuthView()
-//            }
+        Group {
+            if hasSeenOnboarding {
+                if session.isAuthenticated {
+                    FindationTabView()
+                } else {
+                    RegisterView()
+                }
+            } else {
+                AuthView()
+            }
         }
     }
 }

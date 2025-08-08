@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct RefreshResponse: Decodable {
+struct AuthResponse: Decodable {
     let access: String
     let refresh: String
+    let user: User
 }

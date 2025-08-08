@@ -1,18 +1,21 @@
 //
-//  AuthView.swift
+//  RegisterView.swift
 //  Findation
 //
-//  Created by Yoy0z-maps on 8/4/25.
+//  Created by Yoy0z-maps on 8/7/25.
 //
 
 import SwiftUI
 
-struct AuthView: View {
+struct RegisterView: View {
     @EnvironmentObject var session: SessionStore
     
+    // API POST 요청에 들어갈 상태
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var nickname: String = ""
     
+    // 네비게이션, UI 변경에 필요한 상태
     @State private var isLoggingIn = false
     @State private var showError: Bool = false
     @State private var showPopup: Bool = false
@@ -22,17 +25,19 @@ struct AuthView: View {
         NavigationStack {
             ZStack {
                 VStack {
-                    Spacer()
-                    Image(systemName: "apple.logo").resizable().frame(width: 90, height: 110).contentMargins(.bottom, 30)
-                    Text("Findation - App Name")
+                    OnBoardingTitle(title: "회원가입", subTitle: "어푸 서비스에서 사용할 정보를 입력해주세요.")
                     CustomTextField(label:"이메일",placeholder: "iamlearner@apple.com", text: $email, isSecure: false)
                     Spacer()
                         .frame(height: 28)
                     CustomTextField(label:"비밀번호",placeholder: "password", text: $password, isSecure: true)
+                    PasswordStrengthBar(strength: calculateStrength(password: password))
                     Spacer()
-                    SubmitButton(showError: $showError, shouldNavigateToNextScreen: $shouldNavigateToNextScreen, isSatisfied: email.isEmpty == false && password.isEmpty == false, label: "시작하기") {
+                        .frame(height: 28)
+                    CustomTextField(label:"닉네임",placeholder: "예: 헤엄치는 뚱이", text: $nickname, isSecure: false)
+                    Spacer()
+                    SubmitButton(showError: $showError, shouldNavigateToNextScreen: $shouldNavigateToNextScreen, isSatisfied: isRegisterFormValid(email: email, password: password, nickname: nickname), label: "다음으로") {
                         do {
-                            let auth = try await UserAPI.signIn(email: email, password: password)
+                            let auth = try await UserAPI.signUp(email: email, password: password, nickname: nickname)
                             print("access:", auth.access)
                             print("refresh:", auth.refresh)
                             // TODO: Keychain 저장
@@ -43,8 +48,9 @@ struct AuthView: View {
                             print("SignUp failed:", error)
                         }
                     }
-                    Spacer()
+                        .padding(.bottom, 60)
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
                 if isLoggingIn {
                     ProgressView()
                         .scaleEffect(2.0)
@@ -53,12 +59,13 @@ struct AuthView: View {
                         .cornerRadius(10)
                 }
             }
+            //.ignoresSafeArea(.keyboard) 필요할까?
             .navigationDestination(isPresented: $shouldNavigateToNextScreen) {
-                FindationTabView()
+                OnboardingView()
             }
             .alert(isPresented: $showPopup) {
                 Alert(
-                    title: Text("애플 로그인 실패"),
+                    title: Text("회원가입 실패"),
                     message: Text("잠시 후 다시 시도해 주세요."),
                     dismissButton: .default(Text("확인"))
                 )
@@ -68,5 +75,5 @@ struct AuthView: View {
 }
 
 #Preview {
-    AuthView()
+    RegisterView()
 }
