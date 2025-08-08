@@ -26,7 +26,7 @@ struct StatSection: View {
                 let height = geometry.size.height
                 let stepWidth = width / CGFloat(data.count - 1)
 
-                Path { path in
+                let linePath = Path { path in
                     for index in data.indices {
                         let x = stepWidth * CGFloat(index)
                         let y = height - (CGFloat(data[index]) / CGFloat(maxData)) * height
@@ -37,12 +37,43 @@ struct StatSection: View {
                         }
                     }
                 }
-                .stroke(Color.blue, lineWidth: 2)
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(8)
+
+                let fillPath = Path { path in
+                    path.move(to: CGPoint(x: 0, y: height))
+                    for index in data.indices {
+                        let x = stepWidth * CGFloat(index)
+                        let y = height - (CGFloat(data[index]) / CGFloat(maxData)) * height
+                        path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                    path.addLine(to: CGPoint(x: width, y: height))
+                    path.closeSubpath()
+                }
+
+                fillPath
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.blue.opacity(0.05)]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ))
+
+                linePath
+                    .stroke(Color.blue, lineWidth: 2)
+
+                ForEach(data.indices, id: \.self) { index in
+                    let x = stepWidth * CGFloat(index)
+                    let y = height - (CGFloat(data[index]) / CGFloat(maxData)) * height
+
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 5, height: 5)
+                        .position(x: x, y: y)
+                }
             }
             .frame(height: 120)
-
+            .background(Color(UIColor.systemGray6))
+            .cornerRadius(8)
+            
+            
             HStack {
                 Text("일주일 전")
                 Spacer()
