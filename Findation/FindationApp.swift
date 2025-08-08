@@ -2,17 +2,13 @@ import SwiftUI
 
 @main
 struct FindationApp: App {
-//    @StateObject private var session = SessionStore()
-    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding = false
+    @StateObject private var session = SessionStore()
+
 
     var body: some Scene {
         WindowGroup {
-            if hasSeenOnboarding {
-                FindationTabView()
-            } else {
-                OnboardingView()
-                   
-            }
+            RootView()
+                .environmentObject(session)
         }
     }
 }

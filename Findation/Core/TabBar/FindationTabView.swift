@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct FindationTabView: View {
+    @EnvironmentObject var session: SessionStore
+    @Environment(\.scenePhase) private var phase
     @State private var selectedTab = 0
     
     var body: some View {
@@ -31,7 +33,15 @@ struct FindationTabView: View {
                             .foregroundColor(selectedTab == 0 ? .accentColor : .gray)
                     }
                 }
-                .tag(0)
+                .tag(1)
+        }
+        .task {
+            await session.refreshTokenIfNeeded()
+        }
+        .onChange(of: phase) { _, newPhase in
+            if newPhase == .active {
+                Task { await session.refreshTokenIfNeeded() }
+            }
         }
     }
 }

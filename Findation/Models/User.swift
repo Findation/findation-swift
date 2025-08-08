@@ -9,22 +9,20 @@ import Foundation
 
 struct User: Decodable {
     let id: String
-    let username: String
-    let provider: String
+    let email: String
+    let password: String
+    let nickname: String
     let rank: Int
     let totalTime: Double
     let createdAt: String
-    let socialId: String?
-    let socialEmail: String?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case username
-        case provider
+        case email
+        case password
+        case nickname
         case rank
         case totalTime = "total_time"
         case createdAt = "created_at"
-        case socialId = "social_id"
-        case socialEmail = "social_email"
     }
 }

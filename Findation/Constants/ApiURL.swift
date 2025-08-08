@@ -10,9 +10,10 @@ import Foundation
 enum API {
     static let baseURL = "https://api.findation.site"
 
-    enum Auth {
-        static let socialLogin = "\(baseURL)/users/auth/social-login/"
-        static let tokenRefresh = "\(baseURL)/users/auth/token/refresh/"
+    enum User {
+        static let signUp = "\(baseURL)/users/auth/register/"
+        static let signIn = "\(baseURL)/users/auth/login/"
+        static let refreshToken = "\(baseURL)/users/auth/token/refresh/"
         static let searchUser = "\(baseURL)/users/search/"
     }
     
