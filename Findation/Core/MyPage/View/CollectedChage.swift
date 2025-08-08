@@ -57,12 +57,19 @@ struct CollectedChangeView: View {
                     
                     Text(CalendarHelper.currentMonthText(from: currentDate))
                         .font(.body)
-                        .foregroundStyle(Color("Primary"))
+                        .foregroundColor(.black)
                     
                     Button {
                         changeMonth(by: 1)
                     } label: {
                         Image(systemName: "arrowtriangle.right.fill")
+                    }
+                    
+                    Button {
+                        changeMonth(by: 0)
+                    } label : {
+                        Text("오늘")
+                            .font(.body)
                     }
                 }
                 .padding()
