@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		38600BD72E45E43500B80724 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 38600BD62E45E43500B80724 /* Lottie */; };
 		4C6891542E41CC8E00317AFA /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 4C6891532E41CC8E00317AFA /* Alamofire */; };
 		5508951B2E3F444000771FA8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5508951A2E3F444000771FA8 /* README.md */; };
 		550895DA2E40814B00771FA8 /* .gitignore.md in Resources */ = {isa = PBXBuildFile; fileRef = 550895D92E40814B00771FA8 /* .gitignore.md */; };
@@ -37,9 +38,22 @@
 		550895D92E40814B00771FA8 /* .gitignore.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = .gitignore.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		38600BC92E45DB1100B80724 /* Exceptions for "Findation" folder in "Findation" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 550894EF2E3F441000771FA8 /* Findation */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		550894F22E3F441000771FA8 /* Findation */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				38600BC92E45DB1100B80724 /* Exceptions for "Findation" folder in "Findation" target */,
+			);
 			path = Findation;
 			sourceTree = "<group>";
 		};
@@ -61,6 +75,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C6891542E41CC8E00317AFA /* Alamofire in Frameworks */,
+				38600BD72E45E43500B80724 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,6 +139,7 @@
 			name = Findation;
 			packageProductDependencies = (
 				4C6891532E41CC8E00317AFA /* Alamofire */,
+				38600BD62E45E43500B80724 /* Lottie */,
 			);
 			productName = Findation;
 			productReference = 550894F02E3F441000771FA8 /* Findation.app */;
@@ -209,6 +225,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				4C6891522E41CC8E00317AFA /* XCRemoteSwiftPackageReference "Alamofire" */,
+				38600BD52E45E43500B80724 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 550894F12E3F441000771FA8 /* Products */;
@@ -418,9 +435,11 @@
 				DEVELOPMENT_TEAM = GQM6B63P8T;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Findation/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -451,9 +470,11 @@
 				DEVELOPMENT_TEAM = GQM6B63P8T;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Findation/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -587,6 +608,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		38600BD52E45E43500B80724 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 		4C6891522E41CC8E00317AFA /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
@@ -598,6 +627,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		38600BD62E45E43500B80724 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 38600BD52E45E43500B80724 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
 		4C6891532E41CC8E00317AFA /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4C6891522E41CC8E00317AFA /* XCRemoteSwiftPackageReference "Alamofire" */;

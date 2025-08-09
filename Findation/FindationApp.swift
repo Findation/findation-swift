@@ -7,7 +7,7 @@ struct FindationApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            SplashEntranceView()
                 .environmentObject(session)
         }
     }
