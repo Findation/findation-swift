@@ -24,7 +24,7 @@ struct FindationTabView: View {
                     }
                 }
                 .tag(0)
-            MyPage()
+            MyPageScreen()
                 .tabItem {
                     VStack {
                         Image(systemName: selectedTab == 1 ? "person.fill" : "person")

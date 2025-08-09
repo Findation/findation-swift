@@ -112,19 +112,19 @@ struct TimeSmall: ViewModifier {
 
 
 extension View {
-    func bodyText() -> some View {
+    func largeTitle() -> some View {
         self.modifier(LargeTitle())
     }
 
-    func heading1() -> some View {
+    func title1() -> some View {
         self.modifier(Title1())
     }
 
-    func heading2() -> some View {
+    func title2() -> some View {
         self.modifier(Title2())
     }
 
-    func captionText() -> some View {
+    func title3() -> some View {
         self.modifier(Title3())
     }
     func headline() -> some View {

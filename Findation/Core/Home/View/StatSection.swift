@@ -52,7 +52,7 @@ struct StatSection: View {
             .foregroundColor(.gray)
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color.white)
         .cornerRadius(16)
         .padding(.horizontal)
     }

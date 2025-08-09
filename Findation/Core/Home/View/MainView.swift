@@ -1,10 +1,3 @@
-//
-//  MainView.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-
 import SwiftUI
 import UIKit
 
@@ -28,11 +21,13 @@ struct MainView: View {
     let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
     
     @State private var currentDate = Date()
+      
     @State private var showAddTask = false
     @State private var editTargetRoutine: Routine? = nil
     @State private var showCompletionConfirmaion: Bool = false
 
     @State private var activeRoutine: Routine? = nil
+
     @State private var showTimerOverlay = false
     @State private var timerValue: TimeInterval = 0
     @State private var timerRunning = false
@@ -43,6 +38,7 @@ struct MainView: View {
     @State private var routineToDelete: Routine? = nil
 
     @State private var showCompletionModal = false
+
     @State private var showLastModal = false
     @State private var elapsedSnapshot: TimeInterval = 0
     
@@ -52,7 +48,7 @@ struct MainView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.white.ignoresSafeArea()
+                Color("Secondary").ignoresSafeArea()
                 
                 if vm.isLoading {
                     ProgressView()
@@ -146,16 +142,13 @@ struct MainView: View {
                         Color.black.opacity(showTimerOverlay ? 0.5 : 0)
                             .ignoresSafeArea()
                             .animation(.easeInOut(duration: 0.4), value: showTimerOverlay)
-
-                        if showTimerOverlay {
+                        if let routine = activeRoutine, showTimerOverlay {
                             timerOverlay(for: routine)
                                 .transition(.move(edge: .top).combined(with: .opacity))
                                 .zIndex(1)
                         }
-                    }
-                    .zIndex(1)
-                }
-            }
+                    }.zIndex(1)
+             }
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar) //네비게이션 스택
             .task { // 최초 진입 1회 페치
@@ -200,8 +193,8 @@ struct MainView: View {
         }
     }
 
+    // MARK: - 타이머 로직
     func startTimer(for routine: Routine) {
-        activeRoutine = routine
         timerValue = 0
         timerRunning = true
 
@@ -209,6 +202,8 @@ struct MainView: View {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             timerValue += 1
         }
+
+        activeRoutine = routine
 
         withAnimation(.easeInOut(duration: 0.5)) {
             showTimerOverlay = true
@@ -229,64 +224,62 @@ struct MainView: View {
     func timerOverlay(for routine: Routine) -> some View {
         GeometryReader { geo in
             VStack {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                ZStack {
+                    HStack {
+                        Spacer()
+                        Button(action: pauseOrResumeTimer) {
+                            Image(systemName: timerRunning ? "pause.fill" : "play.fill")
+                                .foregroundColor(.blue)
+                                .frame(width: 50, height: 50)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                        }
+                    }
+
+                    VStack(spacing: 4) {
                         Text("\(nickname)님")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
                         Text("오늘도 힘내요!")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white)
                     }
-
-                    Spacer()
-
-                    Button(action: pauseOrResumeTimer) {
-                        Image(systemName: timerRunning ? "pause.fill" : "play.fill")
-                            .foregroundColor(.blue)
-                            .frame(width: 50, height: 50)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                    }
+                    .title1()
+                    .foregroundColor(.white)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.top, 80)
 
                 Spacer()
 
                 ZStack {
                     Circle()
-                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                        .frame(width: 260, height: 260)
+                        .stroke(Color.white, lineWidth: 1)
+                        .frame(width: 310, height: 310)
 
                     VStack(spacing: 12) {
                         Text(routine.title)
+                            .bodytext()
                             .foregroundColor(.white)
-                            .font(.system(size: 16))
 
                         Text(timerString(from: timerValue))
+                            .timeLarge()
                             .foregroundColor(.white)
-                            .font(.system(size: 36, weight: .semibold, design: .monospaced))
                     }
                 }
 
                 Spacer()
 
-                VStack(spacing: 8) {
-                    ForEach(0..<3) { _ in
-                        Image(systemName: "chevron.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
+                VStack(spacing: 30) {
+                    Image("swipe")
+                        .resizable()
+                        .frame(width: 22, height: 32)
 
                     Text("위로 스와이프해서 종료하기")
+                        .footNote()
                         .foregroundColor(.white.opacity(0.7))
-                        .font(.footnote)
                 }
-                .padding(.bottom, 40)
+                .padding(.bottom, 88)
             }
             .frame(width: geo.size.width, height: geo.size.height)
-            .background(Color.blue)
+            .background(Color("Primary"))
+            .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
             .offset(y: dragOffset)
             .gesture(
                 DragGesture()
@@ -298,13 +291,11 @@ struct MainView: View {
                     .onEnded { value in
                         // ❌ 여기서 바로 모달 띄우지 말자
                         if value.translation.height < -150 {
-                            withAnimation(.easeInOut(duration: 0.35)) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
                                 dragOffset = -geo.size.height
                             }
-                            // 스냅샷 먼저 저장
                             elapsedSnapshot = timerValue
-
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 showTimerOverlay = false
                                 dragOffset = 0
                                 endTimer()                // 여기서 timerValue가 0으로 초기화돼도 OK(이미 스냅샷 있음)
