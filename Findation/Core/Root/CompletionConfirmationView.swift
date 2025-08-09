@@ -1,10 +1,3 @@
-// 활동 완료 뷰
-//  CompletionConfirmationView.swift
-//  again
-//
-//  Created by 변관영 on 8/6/25.
-//
-
 import SwiftUI
 
 struct CompletionConfirmationView: View {
@@ -12,61 +5,94 @@ struct CompletionConfirmationView: View {
     var elapsedTime: TimeInterval
     var onComplete: () -> Void
     var onPhotoProof: () -> Void
-    var onDismiss: () -> Void   // ← 닫기용 콜백 추가
+    var onDismiss: () -> Void
+
+    @State private var selectedRating: Int = 0
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            VStack(spacing: 16) {
-                Text("활동을 완료할까요?")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black)
+            VStack(spacing: 20) {
+                Text("루틴 완료")
+                    .bodytext()
+                    .foregroundColor(Color("Black"))
 
-                Text(routineTitle)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.blue)
+                ZStack {
+                    Circle()
+                        .stroke(Color("Primary"), lineWidth: 1)
+                        .frame(width: 230, height: 230)
 
-                Text(timerString(from: elapsedTime))
-                    .font(.system(size: 36, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.blue)
+                    VStack(spacing: 5) {
+                        Text(routineTitle)
+                            .bodytext()
+                            .foregroundColor(Color("Primary"))
 
-                HStack(spacing: 12) {
+                        Text(timerString(from: elapsedTime))
+                            .timeSmall()
+                            .foregroundColor(Color("Primary"))
+                    }
+                }
+
+                VStack {
+                    Text("오늘의 집중도는 어땠나요?")
+                        .caption1()
+                        .foregroundColor(Color("Black"))
+
+                    HStack(spacing: 5) {
+                        ForEach(1...5, id: \.self) { index in
+                            Image(index <= selectedRating ? "fish_true" : "fish_false")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .onTapGesture {
+                                    selectedRating = index
+                                }
+                        }
+                    }
+                }
+
+                HStack(spacing: 7) {
                     Button(action: onComplete) {
                         Text("그냥 완료하기")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .foregroundColor(.blue)
-                            .background(Color.white)
+                            .bodytext()
+                            .padding(14)
+                            .frame(width: 140, height: 55)
+                            .foregroundColor(Color("Primary"))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.blue, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 999)
+                                    .stroke(Color("Primary"), lineWidth: 1)
                             )
                     }
 
                     Button(action: onPhotoProof) {
                         Text("사진 인증하기")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .bodytext()
+                            .padding(14)
+                            .frame(width: 140, height: 55)
                             .foregroundColor(.white)
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 999)
+                                    .fill(Color("Primary"))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 999)
+                                    .stroke(Color("Primary"), lineWidth: 1)
+                            )
                     }
                 }
             }
-            .padding(24)
+            .padding(20)
             .background(Color.white)
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
-            .padding(.top, 24)
 
-            // X 버튼
             Button(action: onDismiss) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.gray.opacity(0.7))
-                    .padding(12)
+                Image(systemName: "xmark")
+                    .font(.system(size: 22))
+                    .foregroundColor(Color("DarkGray"))
+                    .padding(.top, 20)
+                    .padding(.trailing, 20)
             }
         }
-        .padding(.horizontal, 24)
+        .frame(width: 333, height: 456)
     }
 
     func timerString(from time: TimeInterval) -> String {
@@ -76,10 +102,3 @@ struct CompletionConfirmationView: View {
         return String(format: "%02d:%02d:%02d", h, m, s)
     }
 }
-//
-//  CompletionConfirmationView.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-

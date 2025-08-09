@@ -1,15 +1,9 @@
-//
-//  AddTeskView.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-
 import SwiftUI
 
 struct AddTaskView: View {
     @Environment(\.dismiss) var dismiss
-    @Binding var routines: [Routine]
+    @Binding var activeRoutines: [Routine]
+    @Binding var completedRoutines: [Routine]
     @Binding var routineToEdit: Routine?
 
     @State private var taskText: String = ""
@@ -39,12 +33,16 @@ struct AddTaskView: View {
                         let trimmedTitle = taskText.trimmingCharacters(in: .whitespacesAndNewlines)
                         let trimmedTag = categoryText.trimmingCharacters(in: .whitespacesAndNewlines)
 
-                        if var editing = routineToEdit,
-                           let index = routines.firstIndex(where: { $0.id == editing.id }) {
-                            routines[index].title = trimmedTitle
-                            routines[index].tag = trimmedTag
+                        if var editing = routineToEdit {
+                            if let index = activeRoutines.firstIndex(where: { $0.id == editing.id }) {
+                                activeRoutines[index].title = trimmedTitle
+                                activeRoutines[index].tag = trimmedTag
+                            } else if let index = completedRoutines.firstIndex(where: { $0.id == editing.id }) {
+                                completedRoutines[index].title = trimmedTitle
+                                completedRoutines[index].tag = trimmedTag
+                            }
                         } else {
-                            routines.append(Routine(title: trimmedTitle, tag: trimmedTag))
+                            activeRoutines.append(Routine(title: trimmedTitle, tag: trimmedTag))
                         }
 
                         dismiss()

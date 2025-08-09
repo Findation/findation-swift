@@ -13,11 +13,10 @@ class RoutineCell: UITableViewCell {
     private let progressView = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
 
-    private let strikeThroughView = UIView() // ✅ 빨간 실선
-    private var isCompleted: Bool = false // ✅ 상태 저장용
+    private let strikeThroughView = UIView()
+    private var isCompleted: Bool = false
 
     private var longPressRecognizer: UILongPressGestureRecognizer!
-    private var fillStartTime: Date?
     private var longPressTimer: Timer?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -36,7 +35,6 @@ class RoutineCell: UITableViewCell {
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
-        // ✅ 완료된 경우 실선 표시 + 롱프레스 비활성화 효과
         strikeThroughView.isHidden = !isCompleted
         contentView.alpha = isCompleted ? 0.6 : 1.0
     }
@@ -45,32 +43,46 @@ class RoutineCell: UITableViewCell {
         backgroundColor = .white
         selectionStyle = .none
 
-        // MARK: title
-        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        let bodyFont = UIFont.systemFont(ofSize: 16)
+        let captionFont = UIFont.systemFont(ofSize: 12)
+        let subheadFont = UIFont.systemFont(ofSize: 15)
 
-        // MARK: tag
-        tagLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        tagLabel.textColor = .systemBlue
-        tagLabel.layer.borderColor = UIColor.systemBlue.cgColor
+        let blackColor = UIColor(named: "Black") ?? .black
+        let darkGrayColor = UIColor(named: "DarkGray") ?? .darkGray
+        let primaryColor = UIColor(named: "Primary") ?? .systemBlue
+        let mediumGrayColor = UIColor(named: "MediumGray") ?? .lightGray
+
+        titleLabel.font = bodyFont
+        titleLabel.textColor = blackColor
+        titleLabel.numberOfLines = 1
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        tagLabel.font = captionFont
+        tagLabel.textColor = .primary
+        tagLabel.backgroundColor = .white
+        tagLabel.layer.borderColor = primaryColor.cgColor
         tagLabel.layer.borderWidth = 1
-        tagLabel.layer.cornerRadius = 10
+        tagLabel.layer.cornerRadius = 999
         tagLabel.clipsToBounds = true
-        tagLabel.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.05)
-        tagLabel.topInset = 3
-        tagLabel.bottomInset = 3
-        tagLabel.leftInset = 8
-        tagLabel.rightInset = 8
+        tagLabel.topInset = 4
+        tagLabel.bottomInset = 4
+        tagLabel.leftInset = 6
+        tagLabel.rightInset = 6
+        tagLabel.setContentHuggingPriority(.required, for: .horizontal)
+        tagLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        // MARK: time
-        timeLabel.font = UIFont.systemFont(ofSize: 12)
-        timeLabel.textColor = .gray
+        timeLabel.font = subheadFont
+        timeLabel.textColor = darkGrayColor
+        timeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        timeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        // MARK: progress overlay
-        progressView.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+        // 배경 진행 바
+        progressView.backgroundColor = primaryColor
         progressView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(progressView)
         progressWidthConstraint = progressView.widthAnchor.constraint(equalToConstant: 0)
-
         NSLayoutConstraint.activate([
             progressView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             progressView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -78,8 +90,8 @@ class RoutineCell: UITableViewCell {
             progressWidthConstraint!
         ])
 
-        // ✅ 빨간 실선
-        strikeThroughView.backgroundColor = .systemRed
+        // 완료 스트라이크
+        strikeThroughView.backgroundColor = mediumGrayColor
         strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
         strikeThroughView.isHidden = true
         contentView.addSubview(strikeThroughView)
@@ -90,26 +102,20 @@ class RoutineCell: UITableViewCell {
             strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
 
-        // MARK: layout stack
-        let titleTagStack = UIStackView(arrangedSubviews: [titleLabel, tagLabel])
-        titleTagStack.axis = .horizontal
-        titleTagStack.spacing = 8
-        titleTagStack.alignment = .center
-
-        let mainStack = UIStackView(arrangedSubviews: [titleTagStack, timeLabel])
+        // 메인 수평 스택 (제목 + 태그 + 시간)
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, tagLabel, timeLabel])
         mainStack.axis = .horizontal
-        mainStack.spacing = 8
+        mainStack.spacing = 10
         mainStack.alignment = .center
-        mainStack.distribution = .equalSpacing
+        mainStack.distribution = .fill
 
         contentView.addSubview(mainStack)
         mainStack.translatesAutoresizingMaskIntoConstraints = false
-
         NSLayoutConstraint.activate([
             mainStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             mainStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor),
-            mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
     }
 
@@ -120,12 +126,11 @@ class RoutineCell: UITableViewCell {
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard !isCompleted else { return } // ✅ 완료된 경우 롱프레스 차단
+        guard !isCompleted else { return }
         guard let progressWidth = progressWidthConstraint else { return }
 
         switch gesture.state {
         case .began:
-            fillStartTime = Date()
             progressWidth.constant = contentView.frame.width
             UIView.animate(withDuration: 1.5) {
                 self.contentView.layoutIfNeeded()
@@ -155,10 +160,3 @@ class RoutineCell: UITableViewCell {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
-//
-//  RoutineCell.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-

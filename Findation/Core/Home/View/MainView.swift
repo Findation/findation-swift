@@ -1,20 +1,15 @@
-//
-//  MainView.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-
 import SwiftUI
 import UIKit
 
 struct MainView: View {
     @State private var currentDate = Date()
-    @State private var routines: [Routine] = []
+    @State private var activeRoutines: [Routine] = []
+    @State private var completedRoutines: [Routine] = []
+
     @State private var showAddTask = false
     @State private var editTargetRoutine: Routine? = nil
-
     @State private var activeRoutine: Routine? = nil
+
     @State private var showTimerOverlay = false
     @State private var timerValue: TimeInterval = 0
     @State private var timerRunning = false
@@ -25,78 +20,93 @@ struct MainView: View {
     @State private var routineToDelete: Routine? = nil
 
     @State private var showCompletionModal = false
-    
+    @State private var showAllRoutines = false
+
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color("Secondary").ignoresSafeArea()
 
             ScrollViewReader { scrollProxy in
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HeaderSection(date: currentDate, showAddTask: $showAddTask)
-                            .padding(.horizontal)
-                            .padding(.top, 20)
-                            .padding(.bottom, 12)
+                    VStack(spacing: 20) {
+                        VStack(spacing: 0) {
+                            HeaderSection(date: currentDate, showAddTask: $showAddTask)
 
-                        UIKitRoutineListView(
-                            routines: $routines,
-                            onLongPressComplete: { routine in
-                                guard !routine.isCompleted else { return }
-                                startTimer(for: routine)
-                            },
-                            onEdit: { routine in
-                                editRoutine(routine)
-                            },
-                            onDelete: { routine in
-                                routineToDelete = routine
-                                showDeleteConfirmation = true
-                            },
-                            onComplete: { routine in
-                                completeRoutine(routine)
-                                activeRoutine = routine
-                                showCompletionModal = true
+                            let visibleActive = showAllRoutines ? activeRoutines : Array(activeRoutines.prefix(5))
+                            let combinedRoutines = visibleActive + completedRoutines
 
-                                // 루틴 아래로 이동 후 scroll
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    if let last = routines.last {
-                                        scrollProxy.scrollTo(last.id, anchor: .bottom)
+                            VStack(spacing: 0) {
+                                UIKitRoutineListView(
+                                    routines: .constant(combinedRoutines),
+                                    onLongPressComplete: { routine in
+                                        guard !routine.isCompleted else { return }
+                                        startTimer(for: routine)
+                                    },
+                                    onEdit: { routine in
+                                        editRoutine(routine)
+                                    },
+                                    onDelete: { routine in
+                                        routineToDelete = routine
+                                        showDeleteConfirmation = true
+                                    },
+                                    onComplete: { routine in
+                                        activeRoutine = routine
+                                        showCompletionModal = true
+
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                            if let last = combinedRoutines.last {
+                                                scrollProxy.scrollTo(last.id, anchor: .bottom)
+                                            }
+                                        }
+                                    }
+                                )
+                                .frame(height: CGFloat(combinedRoutines.count * 56))
+
+                                if activeRoutines.count > 5 {
+                                    Button(action: {
+                                        withAnimation {
+                                            showAllRoutines.toggle()
+                                        }
+                                    }) {
+                                        Image(systemName: showAllRoutines ? "chevron.up" : "chevron.down")
+                                            .foregroundColor(Color("Primary"))
+                                            .padding(.vertical, 12)
                                     }
                                 }
                             }
-                        )
-                        .frame(height: CGFloat(routines.count * 56) + (routines.count > 5 ? 40 : 0))
-                        .padding(.bottom, 20)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 20)
+                        }
+                        .background(Color.white)
+                        .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
 
                         StatSection()
-                            .padding(.bottom, 30)
-
                         ExploreSection()
-                            .padding(.bottom, 40)
                     }
                 }
             }
 
-            if let routine = activeRoutine {
-                ZStack {
-                    Color.black.opacity(showTimerOverlay ? 0.5 : 0)
-                        .ignoresSafeArea()
-                        .animation(.easeInOut(duration: 0.4), value: showTimerOverlay)
-
-                    if showTimerOverlay {
-                        timerOverlay(for: routine)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                            .zIndex(1)
-                    }
-                }
-                .zIndex(1)
+            if let routine = activeRoutine, showTimerOverlay {
+                timerOverlay(for: routine)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(1)
             }
         }
+        .ignoresSafeArea()
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showAddTask) {
-            AddTaskView(routines: $routines, routineToEdit: .constant(nil))
+            AddTaskView(
+                activeRoutines: $activeRoutines,
+                completedRoutines: $completedRoutines,
+                routineToEdit: .constant(nil)
+            )
         }
         .sheet(item: $editTargetRoutine) { routine in
-            AddTaskView(routines: $routines, routineToEdit: .constant(routine))
+            AddTaskView(
+                activeRoutines: $activeRoutines,
+                completedRoutines: $completedRoutines,
+                routineToEdit: $editTargetRoutine
+            )
         }
         .fullScreenCover(isPresented: $showCompletionModal) {
             if let routine = activeRoutine {
@@ -104,17 +114,14 @@ struct MainView: View {
                     routineTitle: routine.title,
                     elapsedTime: routine.elapsedTime,
                     onComplete: {
-                        showCompletionModal = false
-                        activeRoutine = nil
+                        completeRoutine(routine)
+                        resetOverlay()
                     },
                     onPhotoProof: {
-                        showCompletionModal = false
-                        activeRoutine = nil
+                        completeRoutine(routine)
+                        resetOverlay()
                     },
-                    onDismiss: {
-                        showCompletionModal = false
-                        activeRoutine = nil
-                    }
+                    onDismiss: { resetOverlay() }
                 )
             }
         }
@@ -123,23 +130,18 @@ struct MainView: View {
                 title: Text("정말 삭제하시겠어요?"),
                 message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
                 primaryButton: .destructive(Text("삭제")) {
-                    if let routine = routineToDelete {
-                        routines.removeAll { $0.id == routine.id }
-                        routineToDelete = nil
-                    }
+                    deleteRoutine()
                 },
                 secondaryButton: .cancel {
                     routineToDelete = nil
                 }
             )
         }
-        .onDisappear {
-            timer?.invalidate()
-        }
+        .onDisappear { timer?.invalidate() }
     }
 
+    // MARK: - 타이머 로직
     func startTimer(for routine: Routine) {
-        activeRoutine = routine
         timerValue = 0
         timerRunning = true
 
@@ -147,6 +149,8 @@ struct MainView: View {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             timerValue += 1
         }
+
+        activeRoutine = routine
 
         withAnimation(.easeInOut(duration: 0.5)) {
             showTimerOverlay = true
@@ -167,64 +171,62 @@ struct MainView: View {
     func timerOverlay(for routine: Routine) -> some View {
         GeometryReader { geo in
             VStack {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                ZStack {
+                    HStack {
+                        Spacer()
+                        Button(action: pauseOrResumeTimer) {
+                            Image(systemName: timerRunning ? "pause.fill" : "play.fill")
+                                .foregroundColor(.blue)
+                                .frame(width: 50, height: 50)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                        }
+                    }
+
+                    VStack(spacing: 4) {
                         Text("세이님,")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
                         Text("오늘도 힘내요!")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white)
                     }
-
-                    Spacer()
-
-                    Button(action: pauseOrResumeTimer) {
-                        Image(systemName: timerRunning ? "pause.fill" : "play.fill")
-                            .foregroundColor(.blue)
-                            .frame(width: 50, height: 50)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                    }
+                    .title1()
+                    .foregroundColor(.white)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.top, 80)
 
                 Spacer()
 
                 ZStack {
                     Circle()
-                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                        .frame(width: 260, height: 260)
+                        .stroke(Color.white, lineWidth: 1)
+                        .frame(width: 310, height: 310)
 
                     VStack(spacing: 12) {
                         Text(routine.title)
+                            .bodytext()
                             .foregroundColor(.white)
-                            .font(.system(size: 16))
 
                         Text(timerString(from: timerValue))
+                            .timeLarge()
                             .foregroundColor(.white)
-                            .font(.system(size: 36, weight: .semibold, design: .monospaced))
                     }
                 }
 
                 Spacer()
 
-                VStack(spacing: 8) {
-                    ForEach(0..<3) { _ in
-                        Image(systemName: "chevron.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
+                VStack(spacing: 30) {
+                    Image("swipe")
+                        .resizable()
+                        .frame(width: 22, height: 32)
 
                     Text("위로 스와이프해서 종료하기")
+                        .footNote()
                         .foregroundColor(.white.opacity(0.7))
-                        .font(.footnote)
                 }
-                .padding(.bottom, 40)
+                .padding(.bottom, 88)
             }
             .frame(width: geo.size.width, height: geo.size.height)
-            .background(Color.blue)
+            .background(Color("Primary"))
+            .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
             .offset(y: dragOffset)
             .gesture(
                 DragGesture()
@@ -235,10 +237,10 @@ struct MainView: View {
                     }
                     .onEnded { value in
                         if value.translation.height < -150 {
-                            withAnimation(.easeInOut(duration: 0.35)) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
                                 dragOffset = -geo.size.height
                             }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 showTimerOverlay = false
                                 dragOffset = 0
                                 endTimer()
@@ -255,14 +257,19 @@ struct MainView: View {
 
     func endTimer() {
         if let routine = activeRoutine,
-           let index = routines.firstIndex(where: { $0.id == routine.id }) {
-            routines[index].elapsedTime += timerValue
+           let index = activeRoutines.firstIndex(where: { $0.id == routine.id }) {
+            activeRoutines[index].elapsedTime += timerValue
         }
 
         timer?.invalidate()
         timer = nil
         timerValue = 0
         timerRunning = false
+    }
+
+    func resetOverlay() {
+        showCompletionModal = false
+        activeRoutine = nil
     }
 
     func timerString(from time: TimeInterval) -> String {
@@ -277,10 +284,18 @@ struct MainView: View {
     }
 
     func completeRoutine(_ routine: Routine) {
-        if let index = routines.firstIndex(where: { $0.id == routine.id }) {
-            routines[index].isCompleted = true
-            let completed = routines.remove(at: index)
-            routines.append(completed)
+        if let index = activeRoutines.firstIndex(where: { $0.id == routine.id }) {
+            var completed = activeRoutines.remove(at: index)
+            completed.isCompleted = true
+            completedRoutines.append(completed)
+        }
+    }
+
+    func deleteRoutine() {
+        if let routine = routineToDelete {
+            activeRoutines.removeAll { $0.id == routine.id }
+            completedRoutines.removeAll { $0.id == routine.id }
+            routineToDelete = nil
         }
     }
 }

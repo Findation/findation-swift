@@ -1,10 +1,3 @@
-//  루틴 옆에 있는 태그 명 패딩하는 거
-//  PaddingLabel.swift
-//  again
-//
-//  Created by 변관영 on 8/5/25.
-//
-
 import UIKit
 
 class PaddingLabel: UILabel {
@@ -13,14 +6,38 @@ class PaddingLabel: UILabel {
     var leftInset: CGFloat = 0
     var rightInset: CGFloat = 0
 
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
     override func drawText(in rect: CGRect) {
-        let insets = UIEdgeInsets(top: topInset, left: leftInset, bottom: bottomInset, right: rightInset)
+        let insets = UIEdgeInsets(top: topInset, left: leftInset,
+                                  bottom: bottomInset, right: rightInset)
         super.drawText(in: rect.inset(by: insets))
     }
 
     override var intrinsicContentSize: CGSize {
-        let size = super.intrinsicContentSize
-        return CGSize(width: size.width + leftInset + rightInset,
-                      height: size.height + topInset + bottomInset)
+        let superContentSize = super.intrinsicContentSize
+        let width = superContentSize.width + leftInset + rightInset
+        let height = superContentSize.height + topInset + bottomInset
+        return CGSize(width: width, height: height)
+    }
+
+    override func textRect(forBounds bounds: CGRect, limitedToNumberOfLines numberOfLines: Int) -> CGRect {
+        let insetBounds = bounds.inset(by: UIEdgeInsets(top: topInset, left: leftInset,
+                                                        bottom: bottomInset, right: rightInset))
+        let rect = super.textRect(forBounds: insetBounds, limitedToNumberOfLines: numberOfLines)
+        let invertedInsets = UIEdgeInsets(top: -topInset, left: -leftInset,
+                                          bottom: -bottomInset, right: -rightInset)
+        return rect.inset(by: invertedInsets)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        preferredMaxLayoutWidth = bounds.width - leftInset - rightInset
     }
 }
