@@ -1,62 +1,80 @@
-//
-//  StatSection.swift
-//  again
-//
-//  Created by 변관영 on 8/3/25.
-//
-
 import SwiftUI
 
 struct StatSection: View {
-    var data: [Double] = [3, 4, 2, 5, 6, 4, 7] // 임의의 예시 데이터
+    var data: [Double] = [3, 4, 2, 5, 6, 4, 7] // 예시 데이터
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 8){
                 Text("내 통계")
-                    .font(.headline)
+                    .bodytext()
                     .foregroundColor(Color(Color.primaryColor))
-
                 Text("지난 일주일 간의 성취도를 확인하세요.")
-                    .font(.subheadline)
+                    .footNote()
                     .foregroundColor(Color(Color.darkGrayColor))
             }
 
-            GeometryReader { geometry in
-                let maxData = data.max() ?? 1
-                let width = geometry.size.width
-                let height = geometry.size.height
-                let stepWidth = width / CGFloat(data.count - 1)
+            GeometryReader { geo in
+                let maxValue = max(data.max() ?? 1, 1)
+                let w = geo.size.width
+                let h = geo.size.height
+                let stepX = data.count > 1 ? w / CGFloat(data.count - 1) : 0
 
-                Path { path in
-                    for index in data.indices {
-                        let x = stepWidth * CGFloat(index)
-                        let y = height - (CGFloat(data[index]) / CGFloat(maxData)) * height
-                        if index == 0 {
-                            path.move(to: CGPoint(x: x, y: y))
-                        } else {
-                            path.addLine(to: CGPoint(x: x, y: y))
+                // 모든 포인트 좌표
+                let points: [CGPoint] = data.enumerated().map { i, v in
+                    let x = stepX * CGFloat(i)
+                    let y = h - (CGFloat(v) / CGFloat(maxValue)) * h
+                    return CGPoint(x: x, y: y)
+                }
+
+                ZStack {
+                    // 영역(아래 채우기)
+                    if let first = points.first, let last = points.last {
+                        Path { p in
+                            p.move(to: CGPoint(x: first.x, y: h)) // 바닥에서 시작
+                            for pt in points { p.addLine(to: pt) }
+                            p.addLine(to: CGPoint(x: last.x, y: h)) // 바닥으로 닫기
+                            p.closeSubpath()
                         }
+                        .fill(
+//                            LinearGradient(
+//                                colors: [Color.blue.opacity(0.22), Color.blue.opacity(0.05)],
+//                                startPoint: .top,
+//                                endPoint: .bottom
+//                            )
+                            Color.secondaryColor
+                        )
+                    }
+
+                    // 라인
+                    Path { p in
+                        guard let first = points.first else { return }
+                        p.move(to: first)
+                        for pt in points.dropFirst() { p.addLine(to: pt) }
+                    }
+                    .stroke(Color.primaryColor, lineWidth: 1.5)
+
+                    // 포인트(점)
+                    ForEach(points.indices, id: \.self) { i in
+                        Circle()
+                            .fill(Color.primaryColor)
+                            .frame(width: 4, height: 4)
+                            .position(points[i])
                     }
                 }
-                .stroke(Color.blue, lineWidth: 2)
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(8)
             }
             .frame(height: 120)
-
             HStack {
                 Text("일주일 전")
                 Spacer()
                 Text("오늘")
             }
             .font(.caption)
-            .foregroundColor(.gray)
         }
         .padding()
         .background(Color.white)
         .cornerRadius(16)
-        .shadow(color: Color(hex: "A2C6FF"), radius: 5, x: 0, y: 1)
-        .padding(.horizontal)
+        .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
+        .padding(.horizontal, 20)
     }
 }

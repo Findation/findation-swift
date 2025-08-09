@@ -126,15 +126,15 @@ struct MainView: View {
                                 }
                                 .background(Color.white)
                                 .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
-                                .shadow(color: Color(hex: "A2C6FF"), radius: 5, x: 0, y: 1)
+                                .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
                                 
                                 Spacer()
-                                    .frame(height: 20)
+                                    .frame(height: 22)
                                 
                                 StatSection()
                  
                                 Spacer()
-                                    .frame(height: 20)
+                                    .frame(height: 22)
                                 
                                 ExploreSection()
                                 
@@ -142,6 +142,7 @@ struct MainView: View {
                                     .frame(height: 90)
                             }
                         }
+                        .refreshable { await vm.load() }
                     }
                 }
                 
@@ -183,8 +184,7 @@ struct MainView: View {
                                     }
                                     .zIndex(1)
                                 }
-                            } // ⬅️ 여기까지가 ZStack 본문
-                            // ⬇️ 이 모디파이어들은 "바로 위 ZStack"에 붙는다
+                            }
                             .ignoresSafeArea()
                             .navigationBarBackButtonHidden(true)
                             .toolbar(.hidden, for: .navigationBar)
@@ -203,13 +203,9 @@ struct MainView: View {
                                     }
                                 }
                             }
-                            .refreshable {
-                                await vm.load()
-                            }
                             .sheet(isPresented: $showAddTask, onDismiss: {
                                 Task { await vm.load() }
                             }) {
-                                // ⬇️ AddTaskView가 (routines:, routineToEdit:) 시그니처인지 확인!
                                 AddTaskView(
                                     routines: routinesBinding,
                                     routineToEdit: $editTargetRoutine
@@ -234,8 +230,8 @@ struct MainView: View {
                             .onDisappear {
                                 timer?.invalidate()
                             }
-                        } // ⬅️ 여기서 NavigationStack 끝
-                    } // ⬅️ body ViewBuilder 끝
+                        }
+                    }
 
     // MARK: - 타이머 로직
     func startTimer(for routine: Routine) {

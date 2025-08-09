@@ -69,8 +69,8 @@ struct ExploreSection: View {
         .padding(15)
         .background(Color.white)
         .cornerRadius(15)
-        .shadow(color: Color(hex: "A2C6FF"), radius: 5, x: 0, y: 1)
-        .padding(.horizontal)
+        .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
+        .padding(.horizontal, 20)
     }
 }
 
