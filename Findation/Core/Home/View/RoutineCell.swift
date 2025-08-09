@@ -8,7 +8,7 @@ class RoutineCell: UITableViewCell {
     var onComplete: (() -> Void)?
 
     private let titleLabel = UILabel()
-    private let tagLabel = PaddingLabel()
+    private let categoryLabel = PaddingLabel()
     private let timeLabel = UILabel()
     private let progressView = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
@@ -32,7 +32,7 @@ class RoutineCell: UITableViewCell {
 
     func configure(with routine: Routine) {
         titleLabel.text = routine.title
-        tagLabel.text = routine.tag
+        categoryLabel.text = routine.category
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
@@ -49,17 +49,17 @@ class RoutineCell: UITableViewCell {
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
 
         // MARK: tag
-        tagLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        tagLabel.textColor = .systemBlue
-        tagLabel.layer.borderColor = UIColor.systemBlue.cgColor
-        tagLabel.layer.borderWidth = 1
-        tagLabel.layer.cornerRadius = 10
-        tagLabel.clipsToBounds = true
-        tagLabel.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.05)
-        tagLabel.topInset = 3
-        tagLabel.bottomInset = 3
-        tagLabel.leftInset = 8
-        tagLabel.rightInset = 8
+        categoryLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        categoryLabel.textColor = .systemBlue
+        categoryLabel.layer.borderColor = UIColor.systemBlue.cgColor
+        categoryLabel.layer.borderWidth = 1
+        categoryLabel.layer.cornerRadius = 10
+        categoryLabel.clipsToBounds = true
+        categoryLabel.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.05)
+        categoryLabel.topInset = 3
+        categoryLabel.bottomInset = 3
+        categoryLabel.leftInset = 8
+        categoryLabel.rightInset = 8
 
         // MARK: time
         timeLabel.font = UIFont.systemFont(ofSize: 12)
@@ -91,7 +91,7 @@ class RoutineCell: UITableViewCell {
         ])
 
         // MARK: layout stack
-        let titleTagStack = UIStackView(arrangedSubviews: [titleLabel, tagLabel])
+        let titleTagStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel])
         titleTagStack.axis = .horizontal
         titleTagStack.spacing = 8
         titleTagStack.alignment = .center

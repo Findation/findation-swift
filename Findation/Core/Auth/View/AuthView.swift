@@ -23,22 +23,20 @@ struct AuthView: View {
             ZStack {
                 VStack {
                     Spacer()
-                    Image(systemName: "apple.logo").resizable().frame(width: 90, height: 110).contentMargins(.bottom, 30)
-                    Text("Findation - App Name")
-                    CustomTextField(label:"이메일",placeholder: "iamlearner@apple.com", text: $email, isSecure: false)
+                    Image("kor").contentMargins(.bottom, 30)
+                    Spacer().frame(height: 40)
+                    CustomTextField(label:"",placeholder: "이메일", text: $email, isSecure: false)
                     Spacer()
                         .frame(height: 28)
-                    CustomTextField(label:"비밀번호",placeholder: "password", text: $password, isSecure: true)
+                    CustomTextField(label:"",placeholder: "비밀번호", text: $password, isSecure: true)
                     Spacer()
                     SubmitButton(showError: $showError, shouldNavigateToNextScreen: $shouldNavigateToNextScreen, isSatisfied: email.isEmpty == false && password.isEmpty == false, label: "시작하기") {
                         do {
                             let auth = try await UserAPI.signIn(email: email, password: password)
-                            print("access:", auth.access)
-                            print("refresh:", auth.refresh)
                             // TODO: Keychain 저장
-                            session.login(accessToken: auth.access, refreshToken: auth.refresh)
-                            
+                            session.login(accessToken: auth.access, refreshToken: auth.refresh, nickname: auth.user.nickname)
                         } catch {
+                            shouldNavigateToNextScreen = false
                             showPopup = true
                             print("SignUp failed:", error)
                         }

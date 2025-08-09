@@ -9,13 +9,16 @@ struct CustomTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label)
-            if isSecure {
-                SecureField(placeholder, text: $text)
-                    .padding(.vertical, 8)
-            } else {
-                TextField(placeholder, text: $text)
-                    .padding(.vertical, 8)
+            Group {
+                if isSecure {
+                    SecureField(placeholder, text: $text)
+                } else {
+                    TextField(placeholder, text: $text)
+                }
             }
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
 
             Divider()
                 .background(Color.gray.opacity(0.5))
