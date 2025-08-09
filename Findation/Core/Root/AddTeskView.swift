@@ -20,6 +20,17 @@ struct AddTaskView: View {
     @State private var repeatWeekly: Bool = false
     @State private var selectedDays: [Bool] = Array(repeating: false, count: 7)
     
+    func normalizeCategory() {
+        let trimmed = categoryText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if trimmed.hasPrefix("#") {
+            let noHash = trimmed.dropFirst().trimmingCharacters(in: .whitespaces)
+            categoryText = "# " + noHash
+        } else {
+            categoryText = "# " + trimmed
+        }
+    }
+    
     var body: some View {
         VStack {
             // MARK: - 상단 헤더
@@ -35,15 +46,27 @@ struct AddTaskView: View {
                     Spacer()
 
                     Button("완료") {
-                        let trimmedTitle = taskText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        let trimmedTag = categoryText.trimmingCharacters(in: .whitespacesAndNewlines)
-
-                        RoutineAPI.postRoutine(title: taskText, category: categoryText, weekdays: selectedDays) { result in
-                            switch result {
-                            case .success:
-                                print("✅ 루틴 등록 완료")
-                            case .failure(let error):
-                                print("❌ 오류: \(error.localizedDescription)")
+                        if routineToEdit == nil {
+                            RoutineAPI.postRoutine(title: taskText, category: categoryText, weekdays: selectedDays) { result in
+                                switch result {
+                                case .success:
+                                    // 루틴 등록 성공
+                                    print("ADD ROUTINE SUCCESS")
+                                case .failure:
+                                    // 루틴 등록 실패
+                                    print("ADD ROUTINE FAILED")
+                                }
+                            }
+                        } else {
+                            RoutineAPI.patchRoutine(id: routineToEdit!.id, title: taskText, category: categoryText, is_repeated: calculateIsRepeatedBitmask(selectedDays)) { result in
+                                switch result {
+                                case .success:
+                                    // 루틴 수정 성공
+                                    print("PATCH ROUTINE SUCCESS")
+                                case .failure:
+                                    // 루틴 등록 실패
+                                    print("PATCH ROUTINE FAILED")
+                                }
                             }
                         }
                         dismiss()
@@ -63,9 +86,9 @@ struct AddTaskView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
                 .focused($isFocusedCategory)
-                .onChange(of: categoryText) {
-                    if !categoryText.hasPrefix("#") {
-                        categoryText = "# " + categoryText.replacingOccurrences(of: "# ", with: "")
+                .onChange(of: isFocusedCategory) { oldValue, newValue in
+                    if oldValue == true && newValue == false {
+                        normalizeCategory()
                     }
                 }
 
@@ -122,6 +145,7 @@ struct AddTaskView: View {
             if let editing = routineToEdit {
                 taskText = editing.title
                 categoryText = editing.category
+                selectedDays = decodeIsRepeatedBitmask(editing.isRepeated)
             }
         }
     }

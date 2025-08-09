@@ -89,7 +89,7 @@ enum RoutineAPI {
         }
     }
     
-    static func patchRoutine(id: String, title: String?, category: String?, is_repeated: Int?, comletion: @escaping (Bool) -> Void) {
+    static func patchRoutine(id: String, title: String?, category: String?, is_repeated: Int?, completion: @escaping (Result<Void, Error>) -> Void) {
         let token = KeychainHelper.load(forKey: "accessToken")
         
         let headers: HTTPHeaders = [
@@ -101,16 +101,16 @@ enum RoutineAPI {
         if let category { parameters["category"] = category }
         if let is_repeated { parameters["is_repeated"] = is_repeated }
         
-        AF.request(API.Routines.routineDetail(id: id), method: .patch, headers: headers)
+        AF.request(API.Routines.routineDetail(id: id), method: .patch, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
             .validate()
             .response { response in
                 switch response.result {
                 case .success:
-                    comletion(true)
-                case .failure:
-                    comletion(false)
+                    completion(.success(()))
+                case .failure(let error):
+                    completion(.failure(error))
                 }
-            }
+        }
     }
 }
 

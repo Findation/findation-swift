@@ -63,21 +63,18 @@ struct MainView: View {
                                     },
                                     onEdit: { routine in
                                         editRoutine(routine)
+                                        showAddTask = true
                                     },
                                     onDelete: { routine in
                                         routineToDelete = routine
                                         showDeleteConfirmation = true
                                         RoutineAPI.deleteRoutine(id: routine.id) { success in
                                             if success {
-                                                // ✅ 성공 시 로컬 데이터에서도 삭제
                                                 if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
                                                     vm.routines.remove(at: index)
                                                 }
-                                                print("루틴 삭제 성공")
                                             } else {
-                                                // ❌ 실패 시
-                                                print("루틴 삭제 실패")
-                                                // Alert 띄우기나 에러 처리 가능
+                                                // 루틴 삭제 실패 로직
                                             }
                                         }
                                     },
@@ -156,7 +153,8 @@ struct MainView: View {
             .sheet(isPresented: $showAddTask, onDismiss: {
                 Task { await vm.load() }
             }) {
-                AddTaskView(routines: routinesBinding, routineToEdit: .constant(nil))
+                AddTaskView(routines: routinesBinding, routineToEdit: $editTargetRoutine)
+                    .id(editTargetRoutine?.id)
             }
             .alert(isPresented: $showDeleteConfirmation) {
                 Alert(

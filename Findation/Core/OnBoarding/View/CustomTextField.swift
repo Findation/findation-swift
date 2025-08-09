@@ -5,27 +5,41 @@ struct CustomTextField: View {
     let placeholder: String
     @Binding var text: String
     let isSecure: Bool
+    
+    @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(label)
-            Group {
+        VStack(alignment: .leading, spacing: 6) {
+            if !label.isEmpty {
+                Text(label)
+            }
+            ZStack(alignment: .leading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .foregroundStyle(.secondary)
+                }
                 if isSecure {
-                    SecureField(placeholder, text: $text)
+                    SecureField("", text: $text)
+                        .focused($isFocused)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
                 } else {
-                    TextField(placeholder, text: $text)
+                    TextField("", text: $text)
+                        .focused($isFocused)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+                        .keyboardType(.emailAddress)
+                        .textContentType(.username)
                 }
             }
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
             .contentShape(Rectangle())
+            .onTapGesture { isFocused = true }
 
-            Divider()
-                .background(Color.gray.opacity(0.5))
+            Divider().background(.gray.opacity(0.5))
         }
         .padding(.horizontal, 20)
-    }
-}
+    }}
 
 #Preview {
     CustomTextField(label:"라벨",placeholder: "example@example.com", text: .constant(""), isSecure: false)
