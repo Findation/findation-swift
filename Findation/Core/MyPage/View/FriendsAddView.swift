@@ -1,86 +1,43 @@
-//
-//  FriendsAddView.swift
-//  again
-//
-//  Created by 변관영 on 8/6/25.
-//
-
 import SwiftUI
 
-struct MyPage: View {
-    @State private var fishBobbingOffset: CGFloat = 0
+struct FriendAddView: View {
+    @State private var friendEmail: String = ""
 
-    let fishtankHeight: CGFloat = 705
-    let targetFishYCenter: CGFloat = 370
-    
     var body: some View {
-        NavigationView {
-            ScrollView(.vertical, showsIndicators: true) {
-                ZStack(alignment: .top) {
-                    VStack(spacing: 0) {
-                        ZStack {
-                            Image("fishtank")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: fishtankHeight)
-                                .clipped()
+        VStack(spacing: 24) {
+            // ✅ 이메일 입력 필드
+            VStack(spacing: 16) {
+                HStack {
+                    TextField("친구의 이메일을 입력하세요", text: $friendEmail)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .background(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color("MediumGray"), lineWidth: 0.5)
+                        )
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .autocorrectionDisabled()
 
-                            VStack(spacing: 60) {
-                                HStack {
-                                    Text("세이님의 어항")
-                                        .foregroundColor(.white)
-                                        .frame(width: 205, height: 33)
-                                        .frame(maxWidth: .infinity)
-                                        .overlay(
-                                            NavigationLink(destination: MenuView()) {
-                                                Image("hamburger")
-                                                    .padding(.trailing, 20)
-                                                    .contentShape(Rectangle())
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .trailing)
-                                        )
-                                }
-
-                                VStack(spacing: 40){
-                                    StatusBubbleView(text: "요즘 집중이 부족해서 배고파요ㅠㅠ")
-
-                                    Image("fish")
-                                }
-                                    .offset(y: targetFishYCenter - (fishtankHeight / 2) + fishBobbingOffset)
-                                    .onAppear {
-                                        startFishBobbingAnimation()
-                                    }
-                            }
-                            .padding(.bottom, 120) // 기존 패딩 유지
-                        }
-
-                        VStack {
-                            Text("아래 콘텐츠")
-                                .font(.title)
-
-                            Spacer()
-                        }
+                    Button(action: {
+                        print("친구 이메일 검색 버튼 클릭. 입력된 이메일: \(friendEmail)")
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.title3)
+                            .foregroundColor(Color("Primary"))
+                            .padding(.leading, 8)
                     }
-
-                    VStack{
-                        PhotoCollectionView()
-                        PhotoCollectionView()
-                    }
-                    .padding(.top, 530)
                 }
+                .padding(.horizontal)
             }
-            .ignoresSafeArea(.container, edges: .top)
-            .background(Color("Primary"))
-            .navigationBarHidden(true) // 기본 내비게이션 바 숨김
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
 
-    func startFishBobbingAnimation() {
-        withAnimation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-            fishBobbingOffset = -20
+            Spacer()
         }
+        .padding(.top, 32)
+        .background(Color("LightGray").ignoresSafeArea())
+        .navigationTitle("친구 추가")                        // ✅ 시스템 타이틀
+        .navigationBarTitleDisplayMode(.inline)             // ✅ 상단에 작게 표시
+        .navigationBarBackButtonHidden(false)               // ✅ ← 시스템 back 버튼 표시
     }
 }
-
-

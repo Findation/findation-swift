@@ -13,11 +13,10 @@ class RoutineCell: UITableViewCell {
     private let progressView = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
 
-    private let strikeThroughView = UIView() // ✅ 빨간 실선
-    private var isCompleted: Bool = false // ✅ 상태 저장용
+    private let strikeThroughView = UIView()
+    private var isCompleted: Bool = false
 
     private var longPressRecognizer: UILongPressGestureRecognizer!
-    private var fillStartTime: Date?
     private var longPressTimer: Timer?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -44,32 +43,46 @@ class RoutineCell: UITableViewCell {
         backgroundColor = .white
         selectionStyle = .none
 
-        // MARK: title
-        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        let bodyFont = UIFont.systemFont(ofSize: 16)
+        let captionFont = UIFont.systemFont(ofSize: 12)
+        let subheadFont = UIFont.systemFont(ofSize: 15)
 
-        // MARK: tag
-        categoryLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        categoryLabel.textColor = .systemBlue
-        categoryLabel.layer.borderColor = UIColor.systemBlue.cgColor
+        let blackColor = UIColor(named: "Black") ?? .black
+        let darkGrayColor = UIColor(named: "DarkGray") ?? .darkGray
+        let primaryColor = UIColor(named: "Primary") ?? .systemBlue
+        let mediumGrayColor = UIColor(named: "MediumGray") ?? .lightGray
+
+        titleLabel.font = bodyFont
+        titleLabel.textColor = blackColor
+        titleLabel.numberOfLines = 1
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        categoryLabel.font = captionFont
+        categoryLabel.textColor = .primary
+        categoryLabel.backgroundColor = .white
+        categoryLabel.layer.borderColor = primaryColor.cgColor
         categoryLabel.layer.borderWidth = 1
-        categoryLabel.layer.cornerRadius = 10
+        categoryLabel.layer.cornerRadius = 999
         categoryLabel.clipsToBounds = true
-        categoryLabel.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.05)
-        categoryLabel.topInset = 3
-        categoryLabel.bottomInset = 3
-        categoryLabel.leftInset = 8
-        categoryLabel.rightInset = 8
+        categoryLabel.topInset = 4
+        categoryLabel.bottomInset = 4
+        categoryLabel.leftInset = 6
+        categoryLabel.rightInset = 6
+        categoryLabel.setContentHuggingPriority(.required, for: .horizontal)
+        categoryLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        // MARK: time
-        timeLabel.font = UIFont.systemFont(ofSize: 12)
-        timeLabel.textColor = .gray
+        timeLabel.font = subheadFont
+        timeLabel.textColor = darkGrayColor
+        timeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        timeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        // MARK: progress overlay
-        progressView.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.15)
+        // 배경 진행 바
+        progressView.backgroundColor = primaryColor
         progressView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(progressView)
         progressWidthConstraint = progressView.widthAnchor.constraint(equalToConstant: 0)
-
         NSLayoutConstraint.activate([
             progressView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             progressView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -77,7 +90,7 @@ class RoutineCell: UITableViewCell {
             progressWidthConstraint!
         ])
 
-        strikeThroughView.backgroundColor = .systemRed
+        strikeThroughView.backgroundColor = mediumGrayColor
         strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
         strikeThroughView.isHidden = true
         contentView.addSubview(strikeThroughView)
@@ -88,26 +101,20 @@ class RoutineCell: UITableViewCell {
             strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
 
-        // MARK: layout stack
-        let titleTagStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel])
-        titleTagStack.axis = .horizontal
-        titleTagStack.spacing = 8
-        titleTagStack.alignment = .center
-
-        let mainStack = UIStackView(arrangedSubviews: [titleTagStack, timeLabel])
+        // 메인 수평 스택 (제목 + 태그 + 시간)
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, timeLabel])
         mainStack.axis = .horizontal
-        mainStack.spacing = 8
+        mainStack.spacing = 10
         mainStack.alignment = .center
-        mainStack.distribution = .equalSpacing
+        mainStack.distribution = .fill
 
         contentView.addSubview(mainStack)
         mainStack.translatesAutoresizingMaskIntoConstraints = false
-
         NSLayoutConstraint.activate([
             mainStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             mainStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor),
-            mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
     }
 
@@ -123,7 +130,6 @@ class RoutineCell: UITableViewCell {
 
         switch gesture.state {
         case .began:
-            fillStartTime = Date()
             progressWidth.constant = contentView.frame.width
             UIView.animate(withDuration: 1.5) {
                 self.contentView.layoutIfNeeded()
@@ -153,10 +159,3 @@ class RoutineCell: UITableViewCell {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
-//
-//  RoutineCell.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-

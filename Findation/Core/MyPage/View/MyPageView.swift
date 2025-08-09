@@ -2,69 +2,69 @@ import SwiftUI
 
 struct MyPageScreen: View {
     @State private var fishBobbingOffset: CGFloat = 0
+    @State private var isShowingMenu = false  // 메뉴뷰로 이동 트리거
 
     let fishtankHeight: CGFloat = 705
     let targetFishYCenter: CGFloat = 370
-    
+
     var body: some View {
-        NavigationView {
-            ScrollView(.vertical, showsIndicators: true) {
-                ZStack(alignment: .top) {
-                    VStack(spacing: 0) {
-                        ZStack {
-                            Image("fishtank")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: fishtankHeight)
-                                .clipped()
+        NavigationStack {
+            ZStack {
+                ScrollView(.vertical, showsIndicators: true) {
+                    ZStack(alignment: .top) {
+                        VStack(spacing: 0) {
+                            ZStack {
+                                Image("fishtank")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: fishtankHeight)
+                                    .clipped()
 
-                            VStack(spacing: 60) {
-                                HStack {
-                                    Text("세이님의 어항")
-                                        .foregroundColor(.white)
-                                        .frame(width: 205, height: 33)
-                                        .frame(maxWidth: .infinity)
-                                        .overlay(
-                                            NavigationLink(destination: MenuView()) {
-                                                Image("hamburger")
-                                                    .padding(.trailing, 20)
-                                                    .contentShape(Rectangle())
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .trailing)
-                                        )
-                                }
+                                VStack(spacing: 60) {
+                                    HStack {
+                                        Text("세이님의 어항")
+                                            .foregroundColor(.white)
+                                            .frame(width: 205, height: 33)
+                                            .frame(maxWidth: .infinity)
 
-                                VStack(spacing: 40){
-                                    StatusBubbleView(text: "요즘 집중이 부족해서 배고파요ㅠㅠ")
+                                        // 햄버거 버튼 → MenuView로 이동
+                                        NavigationLink(destination: MenuView()) {
+                                            Image("hamburger")
+                                                .padding(.trailing, 20)
+                                        }
+                                        .contentShape(Rectangle())
+                                    }
 
-                                    Image("fish")
-                                }
+                                    VStack(spacing: 40) {
+                                        StatusBubbleView(text: "요즘 집중이 부족해서 배고파요ㅠㅠ")
+                                        Image("fish")
+                                    }
                                     .offset(y: targetFishYCenter - (fishtankHeight / 2) + fishBobbingOffset)
                                     .onAppear {
                                         startFishBobbingAnimation()
                                     }
+                                }
+                                .padding(.bottom, 120)
                             }
-                            .padding(.bottom, 120) // 기존 패딩 유지
+
+                            VStack {
+                                Text("아래 콘텐츠")
+                                    .font(.title)
+                                Spacer()
+                            }
                         }
 
                         VStack {
-                            Text("아래 콘텐츠")
-                                .font(.title)
-
-                            Spacer()
+                            CollectView()
+                            FocusRecoveryView()
                         }
+                        .padding(.top, 530)
                     }
-
-                    VStack{
-                        PhotoCollectionView()
-                        PhotoCollectionView()
-                    }
-                    .padding(.top, 530)
                 }
             }
             .ignoresSafeArea(.container, edges: .top)
             .background(Color("Primary"))
-            .navigationBarHidden(true) // 기본 내비게이션 바 숨김
+            .navigationBarHidden(true)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -75,5 +75,3 @@ struct MyPageScreen: View {
         }
     }
 }
-
-

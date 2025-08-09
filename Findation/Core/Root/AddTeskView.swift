@@ -1,15 +1,9 @@
-//
-//  AddTeskView.swift
-//  Findation
-//
-//  Created by 변관영 on 8/7/25.
-//
-
 import SwiftUI
 
 struct AddTaskView: View {
     @Environment(\.dismiss) var dismiss
-    @Binding var routines: [Routine]
+    @Binding var activeRoutines: [Routine]
+    @Binding var completedRoutines: [Routine]
     @Binding var routineToEdit: Routine?
 
     @State private var taskText: String = ""
