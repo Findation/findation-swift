@@ -2,12 +2,30 @@ import SwiftUI
 import UIKit
 
 struct MainView: View {
-    @State private var currentDate = Date()
-    @State private var activeRoutines: [Routine] = []
-    @State private var completedRoutines: [Routine] = []
+    @EnvironmentObject var session: SessionStore
+    @StateObject private var vm = RoutinesViewModel()
 
+    // 바인딩 필요 시:
+    private var routinesBinding: Binding<[Routine]> {
+        Binding(get: { vm.routines }, set: { vm.routines = $0 })
+    }
+    private var todaysRoutines: [Routine] {
+        vm.routines.filter { $0.matches(date: currentDate) }
+    }
+    private var todaysBinding: Binding<[Routine]> {
+        Binding(
+            get: { vm.routines.filter { $0.matches(date: currentDate) } },
+            set: { _ in /* no-op: 개별 액션(onEdit/onDelete 등)에서 원본 vm.routines를 갱신하므로 여기선 불필요 */ }
+        )
+    }
+    let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
+    
+    @State private var currentDate = Date()
+      
     @State private var showAddTask = false
     @State private var editTargetRoutine: Routine? = nil
+    @State private var showCompletionConfirmaion: Bool = false
+
     @State private var activeRoutine: Routine? = nil
 
     @State private var showTimerOverlay = false
@@ -20,124 +38,159 @@ struct MainView: View {
     @State private var routineToDelete: Routine? = nil
 
     @State private var showCompletionModal = false
-    @State private var showAllRoutines = false
 
+    @State private var showLastModal = false
+    @State private var elapsedSnapshot: TimeInterval = 0
+    
+    @State private var showCamera = false
+    @State private var proofImage: UIImage? = nil
+    
     var body: some View {
-        ZStack {
-            Color("Secondary").ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color("Secondary").ignoresSafeArea()
+                
+                if vm.isLoading {
+                    ProgressView()
+                } else {
+                    ScrollViewReader { scrollProxy in
+                        ScrollView(showsIndicators: false) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HeaderSection(date: currentDate, nickname: nickname, showAddTask: $showAddTask)
+                                    .padding(.horizontal)
+                                    .padding(.bottom, 12)
 
-            ScrollViewReader { scrollProxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        VStack(spacing: 0) {
-                            HeaderSection(date: currentDate, showAddTask: $showAddTask)
-
-                            let visibleActive = showAllRoutines ? activeRoutines : Array(activeRoutines.prefix(5))
-                            let combinedRoutines = visibleActive + completedRoutines
-
-                            VStack(spacing: 0) {
                                 UIKitRoutineListView(
-                                    routines: .constant(combinedRoutines),
+                                    routines: todaysBinding,
                                     onLongPressComplete: { routine in
                                         guard !routine.isCompleted else { return }
                                         startTimer(for: routine)
                                     },
                                     onEdit: { routine in
                                         editRoutine(routine)
+                                        showAddTask = true
                                     },
                                     onDelete: { routine in
                                         routineToDelete = routine
                                         showDeleteConfirmation = true
+                                        RoutineAPI.deleteRoutine(id: routine.id) { success in
+                                            if success {
+                                                if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+                                                    vm.routines.remove(at: index)
+                                                }
+                                            } else {
+                                                // 루틴 삭제 실패 로직
+                                            }
+                                        }
                                     },
                                     onComplete: { routine in
+                                        Task {
+                                            await MainActor.run {
+                                                vm.markCompleted(routine.id)
+                                            }
+                                        }
                                         activeRoutine = routine
                                         showCompletionModal = true
 
+                                        // 루틴 아래로 이동 후 scroll
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                            if let last = combinedRoutines.last {
+                                            if let last = todaysRoutines.last ?? vm.routines.last {
                                                 scrollProxy.scrollTo(last.id, anchor: .bottom)
                                             }
                                         }
                                     }
                                 )
-                                .frame(height: CGFloat(combinedRoutines.count * 56))
+                                .frame(height: CGFloat(todaysRoutines.count * 56) + (todaysRoutines.count > 5 ? 40 : 0))
+                                .padding(.bottom, 20)
 
-                                if activeRoutines.count > 5 {
-                                    Button(action: {
-                                        withAnimation {
-                                            showAllRoutines.toggle()
-                                        }
-                                    }) {
-                                        Image(systemName: showAllRoutines ? "chevron.up" : "chevron.down")
-                                            .foregroundColor(Color("Primary"))
-                                            .padding(.vertical, 12)
-                                    }
-                                }
+                                StatSection()
+                                    .padding(.bottom, 30)
+
+                                ExploreSection()
+                                    .padding(.bottom, 40)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 20)
                         }
-                        .background(Color.white)
-                        .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
-
-                        StatSection()
-                        ExploreSection()
+                    }
+                }
+                
+                if showCompletionModal, let routine = activeRoutine {
+                    CompletionConfirmationView(
+                        routineTitle: routine.title,
+                        elapsedTime: elapsedSnapshot,
+                        onComplete: { /* 완료 처리 */ },
+                        onPhotoProof: {
+                            showCamera = true
+                            showCompletionModal = false
+                            showLastModal = true
+                        },
+                        onDismiss: { showCompletionModal = false }
+                    )
+                }
+                
+                if showLastModal, let proofImage = proofImage, let routine = activeRoutine {
+                    LastModalView(title: routine.title,proofImage: proofImage, showLastModal: $showLastModal) {
+                        Task {
+                            await MainActor.run {
+                                vm.markCompleted(routine.id)
+                            }
+                        }
+                    }
+                }
+                
+                if let routine = activeRoutine {
+                    ZStack {
+                        Color.black.opacity(showTimerOverlay ? 0.5 : 0)
+                            .ignoresSafeArea()
+                            .animation(.easeInOut(duration: 0.4), value: showTimerOverlay)
+                        if let routine = activeRoutine, showTimerOverlay {
+                            timerOverlay(for: routine)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                                .zIndex(1)
+                        }
+                    }.zIndex(1)
+             }
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar) //네비게이션 스택
+            .task { // 최초 진입 1회 페치
+                await vm.load()
+            }
+            .fullScreenCover(isPresented: $showCamera) {
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    CameraPicker { image in
+                        self.proofImage = image
                     }
                 }
             }
-
-            if let routine = activeRoutine, showTimerOverlay {
-                timerOverlay(for: routine)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .zIndex(1)
+            .refreshable { // 당겨서 새로고침
+                await vm.load()
             }
-        }
-        .ignoresSafeArea()
-        .navigationBarBackButtonHidden(true)
-        .sheet(isPresented: $showAddTask) {
-            AddTaskView(
-                activeRoutines: $activeRoutines,
-                completedRoutines: $completedRoutines,
-                routineToEdit: .constant(nil)
-            )
-        }
-        .sheet(item: $editTargetRoutine) { routine in
-            AddTaskView(
-                activeRoutines: $activeRoutines,
-                completedRoutines: $completedRoutines,
-                routineToEdit: $editTargetRoutine
-            )
-        }
-        .fullScreenCover(isPresented: $showCompletionModal) {
-            if let routine = activeRoutine {
-                CompletionConfirmationView(
-                    routineTitle: routine.title,
-                    elapsedTime: routine.elapsedTime,
-                    onComplete: {
-                        completeRoutine(routine)
-                        resetOverlay()
+            .sheet(isPresented: $showAddTask, onDismiss: {
+                Task { await vm.load() }
+            }) {
+                AddTaskView(routines: routinesBinding, routineToEdit: $editTargetRoutine)
+                    .id(editTargetRoutine?.id)
+            }
+            .alert(isPresented: $showDeleteConfirmation) {
+                Alert(
+                    title: Text("정말 삭제하시겠어요?"),
+                    message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
+                    primaryButton: .destructive(Text("삭제")) {
+                        if let routine = routineToDelete {
+                            vm.routines.removeAll { $0.id == routine.id }
+                            routineToDelete = nil
+                        }
                     },
-                    onPhotoProof: {
-                        completeRoutine(routine)
-                        resetOverlay()
-                    },
-                    onDismiss: { resetOverlay() }
+                    secondaryButton: .cancel {
+                        routineToDelete = nil
+                    }
                 )
             }
+            .onDisappear {
+                timer?.invalidate()
+            }
+
         }
-        .alert(isPresented: $showDeleteConfirmation) {
-            Alert(
-                title: Text("정말 삭제하시겠어요?"),
-                message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
-                primaryButton: .destructive(Text("삭제")) {
-                    deleteRoutine()
-                },
-                secondaryButton: .cancel {
-                    routineToDelete = nil
-                }
-            )
-        }
-        .onDisappear { timer?.invalidate() }
     }
 
     // MARK: - 타이머 로직
@@ -184,7 +237,7 @@ struct MainView: View {
                     }
 
                     VStack(spacing: 4) {
-                        Text("세이님,")
+                        Text("\(nickname)님")
                         Text("오늘도 힘내요!")
                     }
                     .title1()
@@ -236,14 +289,17 @@ struct MainView: View {
                         }
                     }
                     .onEnded { value in
+                        // ❌ 여기서 바로 모달 띄우지 말자
                         if value.translation.height < -150 {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 dragOffset = -geo.size.height
                             }
+                            elapsedSnapshot = timerValue
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 showTimerOverlay = false
                                 dragOffset = 0
-                                endTimer()
+                                endTimer()                // 여기서 timerValue가 0으로 초기화돼도 OK(이미 스냅샷 있음)
+                                showCompletionModal = true // 이제 모달 오픈
                             }
                         } else {
                             withAnimation {
@@ -257,19 +313,21 @@ struct MainView: View {
 
     func endTimer() {
         if let routine = activeRoutine,
-           let index = activeRoutines.firstIndex(where: { $0.id == routine.id }) {
-            activeRoutines[index].elapsedTime += timerValue
+           let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+            vm.routines[index].elapsedTime += timerValue
         }
-
         timer?.invalidate()
         timer = nil
         timerValue = 0
         timerRunning = false
     }
 
-    func resetOverlay() {
-        showCompletionModal = false
-        activeRoutine = nil
+    func completeRoutine(_ routine: Routine) {
+        if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+            vm.routines[index].isCompleted = true
+            let completed = vm.routines.remove(at: index)
+            vm.routines.append(completed)
+        }
     }
 
     func timerString(from time: TimeInterval) -> String {
@@ -282,20 +340,8 @@ struct MainView: View {
     func editRoutine(_ routine: Routine) {
         editTargetRoutine = routine
     }
+}
 
-    func completeRoutine(_ routine: Routine) {
-        if let index = activeRoutines.firstIndex(where: { $0.id == routine.id }) {
-            var completed = activeRoutines.remove(at: index)
-            completed.isCompleted = true
-            completedRoutines.append(completed)
-        }
-    }
-
-    func deleteRoutine() {
-        if let routine = routineToDelete {
-            activeRoutines.removeAll { $0.id == routine.id }
-            completedRoutines.removeAll { $0.id == routine.id }
-            routineToDelete = nil
-        }
-    }
+#Preview {
+    MainView()
 }

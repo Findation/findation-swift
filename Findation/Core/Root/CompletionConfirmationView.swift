@@ -83,7 +83,6 @@ struct CompletionConfirmationView: View {
             .background(Color.white)
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
-
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 22))
@@ -101,4 +100,16 @@ struct CompletionConfirmationView: View {
         let s = Int(time) % 60
         return String(format: "%02d:%02d:%02d", h, m, s)
     }
+}
+
+
+#Preview {
+    CompletionConfirmationView(
+        routineTitle: "테스트 루틴",
+        elapsedTime: 3723, // 1시간 2분 3초
+        onComplete: { print("✅ 그냥 완료하기 클릭됨") },
+        onPhotoProof: { print("📸 사진 인증 클릭됨") },
+        onDismiss: { print("❌ 닫기 클릭됨") }
+    )
+    .background(Color.gray.opacity(0.2)) // 미리보기용 배경
 }

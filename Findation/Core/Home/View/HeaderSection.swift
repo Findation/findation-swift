@@ -9,15 +9,15 @@ import SwiftUI
 
 struct HeaderSection: View {
     var date: Date
+    var nickname: String
     @Binding var showAddTask: Bool
-
+    
     var body: some View {
         VStack(spacing: 30) {
-
             // MARK: - 이름 & 문장
             VStack(spacing: 12) {
                 VStack(spacing: 4) {
-                    Text("세이님,")
+                    Text("\(nickname)님")
                     Text("오늘은 뭘 해볼까요?")
                 }
                 .foregroundColor(Color("Black"))
@@ -27,10 +27,10 @@ struct HeaderSection: View {
                     .subhead()
                     .foregroundColor(Color("DarkGray"))
             }
-
+            
             // MARK: - 날짜 + 추가하기 버튼
             HStack {
-                Text(formattedDate(date))
+                Text(DateDecoderFactory.formattedDate(date: date))
                     .bodytext()
                     .foregroundColor(Color("Primary"))
                 Spacer()
@@ -56,24 +56,8 @@ struct HeaderSection: View {
         .padding(.bottom, 24)
         .background(Color.white)
     }
-
-    func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "M월 d일(E)"
-        return formatter.string(from: date)
-    }
 }
 
-// 임시 프리뷰
 #Preview {
-    PreviewWrapper()
-}
-
-struct PreviewWrapper: View {
-    @State private var isPresented = false
-
-    var body: some View {
-        HeaderSection(date: Date(), showAddTask: $isPresented)
-    }
+    HeaderSection(date: Date(timeIntervalSince1970: 1_725_000_000), nickname: "아뇨뚱인데요", showAddTask: .constant(false))
 }

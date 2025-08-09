@@ -8,7 +8,7 @@ class RoutineCell: UITableViewCell {
     var onComplete: (() -> Void)?
 
     private let titleLabel = UILabel()
-    private let tagLabel = PaddingLabel()
+    private let categoryLabel = PaddingLabel()
     private let timeLabel = UILabel()
     private let progressView = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
@@ -31,7 +31,7 @@ class RoutineCell: UITableViewCell {
 
     func configure(with routine: Routine) {
         titleLabel.text = routine.title
-        tagLabel.text = routine.tag
+        categoryLabel.text = routine.category
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
@@ -59,19 +59,19 @@ class RoutineCell: UITableViewCell {
         titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
-        tagLabel.font = captionFont
-        tagLabel.textColor = .primary
-        tagLabel.backgroundColor = .white
-        tagLabel.layer.borderColor = primaryColor.cgColor
-        tagLabel.layer.borderWidth = 1
-        tagLabel.layer.cornerRadius = 999
-        tagLabel.clipsToBounds = true
-        tagLabel.topInset = 4
-        tagLabel.bottomInset = 4
-        tagLabel.leftInset = 6
-        tagLabel.rightInset = 6
-        tagLabel.setContentHuggingPriority(.required, for: .horizontal)
-        tagLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        categoryLabel.font = captionFont
+        categoryLabel.textColor = .primary
+        categoryLabel.backgroundColor = .white
+        categoryLabel.layer.borderColor = primaryColor.cgColor
+        categoryLabel.layer.borderWidth = 1
+        categoryLabel.layer.cornerRadius = 999
+        categoryLabel.clipsToBounds = true
+        categoryLabel.topInset = 4
+        categoryLabel.bottomInset = 4
+        categoryLabel.leftInset = 6
+        categoryLabel.rightInset = 6
+        categoryLabel.setContentHuggingPriority(.required, for: .horizontal)
+        categoryLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         timeLabel.font = subheadFont
         timeLabel.textColor = darkGrayColor
@@ -90,7 +90,6 @@ class RoutineCell: UITableViewCell {
             progressWidthConstraint!
         ])
 
-        // 완료 스트라이크
         strikeThroughView.backgroundColor = mediumGrayColor
         strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
         strikeThroughView.isHidden = true
@@ -103,7 +102,7 @@ class RoutineCell: UITableViewCell {
         ])
 
         // 메인 수평 스택 (제목 + 태그 + 시간)
-        let mainStack = UIStackView(arrangedSubviews: [titleLabel, tagLabel, timeLabel])
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, timeLabel])
         mainStack.axis = .horizontal
         mainStack.spacing = 10
         mainStack.alignment = .center
