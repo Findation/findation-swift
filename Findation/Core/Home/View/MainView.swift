@@ -4,7 +4,8 @@ import UIKit
 struct MainView: View {
     @EnvironmentObject var session: SessionStore
     @StateObject private var vm = RoutinesViewModel()
-
+    
+    @State private var showAllRoutines = false
     // 바인딩 필요 시:
     private var routinesBinding: Binding<[Routine]> {
         Binding(get: { vm.routines }, set: { vm.routines = $0 })
@@ -12,9 +13,12 @@ struct MainView: View {
     private var todaysRoutines: [Routine] {
         vm.routines.filter { $0.matches(date: currentDate) }
     }
+    private var visibleRoutines: [Routine] {
+        showAllRoutines ? todaysRoutines : Array(todaysRoutines.prefix(5))
+    }
     private var todaysBinding: Binding<[Routine]> {
         Binding(
-            get: { vm.routines.filter { $0.matches(date: currentDate) } },
+            get:{visibleRoutines },
             set: { _ in /* no-op: 개별 액션(onEdit/onDelete 등)에서 원본 vm.routines를 갱신하므로 여기선 불필요 */ }
         )
     }
@@ -56,58 +60,86 @@ struct MainView: View {
                     ScrollViewReader { scrollProxy in
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading, spacing: 0) {
-                                HeaderSection(date: currentDate, nickname: nickname, showAddTask: $showAddTask)
-                                    .padding(.horizontal)
-                                    .padding(.bottom, 12)
-
-                                UIKitRoutineListView(
-                                    routines: todaysBinding,
-                                    onLongPressComplete: { routine in
-                                        guard !routine.isCompleted else { return }
-                                        startTimer(for: routine)
-                                    },
-                                    onEdit: { routine in
-                                        editRoutine(routine)
-                                        showAddTask = true
-                                    },
-                                    onDelete: { routine in
-                                        routineToDelete = routine
-                                        showDeleteConfirmation = true
-                                        RoutineAPI.deleteRoutine(id: routine.id) { success in
-                                            if success {
-                                                if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
-                                                    vm.routines.remove(at: index)
+                                VStack(spacing:0) {
+                                    HeaderSection(date: currentDate, nickname: nickname, showAddTask: $showAddTask)
+                                        .padding(.horizontal)
+                                    VStack(spacing: 0) {
+                                        UIKitRoutineListView(
+                                            routines: todaysBinding,
+                                            onLongPressComplete: { routine in
+                                                guard !routine.isCompleted else { return }
+                                                startTimer(for: routine)
+                                            },
+                                            onEdit: { routine in
+                                                editRoutine(routine)
+                                                showAddTask = true
+                                            },
+                                            onDelete: { routine in
+                                                routineToDelete = routine
+                                                showDeleteConfirmation = true
+                                                RoutineAPI.deleteRoutine(id: routine.id) { success in
+                                                    if success {
+                                                        if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+                                                            vm.routines.remove(at: index)
+                                                        }
+                                                    } else {
+                                                        // 루틴 삭제 실패 로직
+                                                    }
                                                 }
-                                            } else {
-                                                // 루틴 삭제 실패 로직
+                                            },
+                                            onComplete: { routine in
+                                                Task {
+                                                    await MainActor.run {
+                                                        vm.markCompleted(routine.id)
+                                                    }
+                                                }
+                                                activeRoutine = routine
+                                                showCompletionModal = true
+                                                
+                                                // 루틴 아래로 이동 후 scroll
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                    if let last = todaysRoutines.last ?? vm.routines.last {
+                                                        scrollProxy.scrollTo(last.id, anchor: .bottom)
+                                                    }
+                                                }
                                             }
-                                        }
-                                    },
-                                    onComplete: { routine in
-                                        Task {
-                                            await MainActor.run {
-                                                vm.markCompleted(routine.id)
+                                        )
+                                        .frame(height: 54 * CGFloat(visibleRoutines.count))
+                                        
+                                        if todaysRoutines.count > 5 {
+                                            Button(action: {
+                                                showAllRoutines.toggle()
+                                            }) {
+                                                Image(systemName: showAllRoutines ? "chevron.up" : "chevron.down")
+                                                    .foregroundColor(Color(Color.primaryColor))
+                                                    .padding(12)
+                                                    .background(
+                                                        Circle()
+                                                            .fill(Color(hex: "#EDF5FC"))
+                                                    )
                                             }
-                                        }
-                                        activeRoutine = routine
-                                        showCompletionModal = true
-
-                                        // 루틴 아래로 이동 후 scroll
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                            if let last = todaysRoutines.last ?? vm.routines.last {
-                                                scrollProxy.scrollTo(last.id, anchor: .bottom)
-                                            }
+                                            .padding(.top, 12)
                                         }
                                     }
-                                )
-                                .frame(height: CGFloat(todaysRoutines.count * 56) + (todaysRoutines.count > 5 ? 40 : 0))
-                                .padding(.bottom, 20)
-
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 20)
+                                }
+                                .background(Color.white)
+                                .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
+                                .shadow(color: Color(hex: "A2C6FF"), radius: 5, x: 0, y: 1)
+                                
+                                Spacer()
+                                    .frame(height: 20)
+                                
                                 StatSection()
-                                    .padding(.bottom, 30)
-
+                 
+                                Spacer()
+                                    .frame(height: 20)
+                                
                                 ExploreSection()
-                                    .padding(.bottom, 40)
+                                
+                                Spacer()
+                                    .frame(height: 90)
                             }
                         }
                     }
@@ -138,60 +170,72 @@ struct MainView: View {
                 }
                 
                 if let routine = activeRoutine {
-                    ZStack {
-                        Color.black.opacity(showTimerOverlay ? 0.5 : 0)
-                            .ignoresSafeArea()
-                            .animation(.easeInOut(duration: 0.4), value: showTimerOverlay)
-                        if let routine = activeRoutine, showTimerOverlay {
-                            timerOverlay(for: routine)
-                                .transition(.move(edge: .top).combined(with: .opacity))
-                                .zIndex(1)
-                        }
-                    }.zIndex(1)
-             }
-            .navigationBarBackButtonHidden(true)
-            .toolbar(.hidden, for: .navigationBar) //네비게이션 스택
-            .task { // 최초 진입 1회 페치
-                await vm.load()
-            }
-            .fullScreenCover(isPresented: $showCamera) {
-                ZStack {
-                    Color.black.ignoresSafeArea()
-                    CameraPicker { image in
-                        self.proofImage = image
-                    }
-                }
-            }
-            .refreshable { // 당겨서 새로고침
-                await vm.load()
-            }
-            .sheet(isPresented: $showAddTask, onDismiss: {
-                Task { await vm.load() }
-            }) {
-                AddTaskView(routines: routinesBinding, routineToEdit: $editTargetRoutine)
-                    .id(editTargetRoutine?.id)
-            }
-            .alert(isPresented: $showDeleteConfirmation) {
-                Alert(
-                    title: Text("정말 삭제하시겠어요?"),
-                    message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
-                    primaryButton: .destructive(Text("삭제")) {
-                        if let routine = routineToDelete {
-                            vm.routines.removeAll { $0.id == routine.id }
-                            routineToDelete = nil
-                        }
-                    },
-                    secondaryButton: .cancel {
-                        routineToDelete = nil
-                    }
-                )
-            }
-            .onDisappear {
-                timer?.invalidate()
-            }
+                                    ZStack {
+                                        Color.black.opacity(showTimerOverlay ? 0.5 : 0)
+                                            .ignoresSafeArea()
+                                            .animation(.easeInOut(duration: 0.4), value: showTimerOverlay)
 
-        }
-    }
+                                        if showTimerOverlay {
+                                            timerOverlay(for: routine)
+                                                .transition(.move(edge: .top).combined(with: .opacity))
+                                                .zIndex(1)
+                                        }
+                                    }
+                                    .zIndex(1)
+                                }
+                            } // ⬅️ 여기까지가 ZStack 본문
+                            // ⬇️ 이 모디파이어들은 "바로 위 ZStack"에 붙는다
+                            .ignoresSafeArea()
+                            .navigationBarBackButtonHidden(true)
+                            .toolbar(.hidden, for: .navigationBar)
+                            .task(id: session.isAuthenticated) {
+                                guard session.isAuthenticated else { return }
+                                await vm.load()
+                            }
+                            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                                Task { await vm.load() }
+                            }
+                            .fullScreenCover(isPresented: $showCamera) {
+                                ZStack {
+                                    Color.black.ignoresSafeArea()
+                                    CameraPicker { image in
+                                        self.proofImage = image
+                                    }
+                                }
+                            }
+                            .refreshable {
+                                await vm.load()
+                            }
+                            .sheet(isPresented: $showAddTask, onDismiss: {
+                                Task { await vm.load() }
+                            }) {
+                                // ⬇️ AddTaskView가 (routines:, routineToEdit:) 시그니처인지 확인!
+                                AddTaskView(
+                                    routines: routinesBinding,
+                                    routineToEdit: $editTargetRoutine
+                                )
+                                    .id(editTargetRoutine?.id)
+                            }
+                            .alert(isPresented: $showDeleteConfirmation) {
+                                Alert(
+                                    title: Text("정말 삭제하시겠어요?"),
+                                    message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
+                                    primaryButton: .destructive(Text("삭제")) {
+                                        if let routine = routineToDelete {
+                                            vm.routines.removeAll { $0.id == routine.id }
+                                            routineToDelete = nil
+                                        }
+                                    },
+                                    secondaryButton: .cancel {
+                                        routineToDelete = nil
+                                    }
+                                )
+                            }
+                            .onDisappear {
+                                timer?.invalidate()
+                            }
+                        } // ⬅️ 여기서 NavigationStack 끝
+                    } // ⬅️ body ViewBuilder 끝
 
     // MARK: - 타이머 로직
     func startTimer(for routine: Routine) {

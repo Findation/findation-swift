@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct SplashEntranceView: View {
+    @EnvironmentObject var session: SessionStore
     @State private var finished = false
 
     var body: some View {
         Group {
             if finished {
                 RootView()
+                    .environmentObject(session)
                     .transition(.opacity)
             } else {
                 ZStack {

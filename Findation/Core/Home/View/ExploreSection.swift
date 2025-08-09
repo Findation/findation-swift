@@ -17,13 +17,13 @@ import SwiftUI
 struct ExploreSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 4){
+            VStack(alignment: .leading, spacing: 8){
                 Text("탐색")
                     .bodytext()
-                    .foregroundColor(Color("Primary"))
+                    .foregroundColor(Color(Color.primaryColor))
                 Text("다른 분들은 어떤 활동을 하고 있는지 살펴보세요.")
                     .footNote()
-                    .foregroundColor(Color("DarkGray"))
+                    .foregroundColor(Color(Color.darkGrayColor))
             }
             
             HStack {
@@ -57,11 +57,11 @@ struct ExploreSection: View {
                 ForEach(["유기화학 3단원 예습", "SwiftUI 공부", "Figma 강의 4강 시청", "컴활 문제집 풀기"], id: \.self) { item in
                     Text(item)
                         .subhead()
-                        .foregroundColor(Color("Black"))
+                        .foregroundColor(Color(Color.darkGrayColor))
                         .padding(.vertical, 7)
                         .padding(.horizontal, 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color("LightGray"))
+                        .background(Color(Color.lightGrayColor))
                         .cornerRadius(999)
                 }
             }
@@ -69,6 +69,7 @@ struct ExploreSection: View {
         .padding(15)
         .background(Color.white)
         .cornerRadius(15)
+        .shadow(color: Color(hex: "A2C6FF"), radius: 5, x: 0, y: 1)
         .padding(.horizontal)
     }
 }

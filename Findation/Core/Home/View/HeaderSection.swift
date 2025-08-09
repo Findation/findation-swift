@@ -17,11 +17,18 @@ struct HeaderSection: View {
             // MARK: - 이름 & 문장
             VStack(spacing: 12) {
                 VStack(spacing: 4) {
-                    Text("\(nickname)님")
+                    (
+                        Text(nickname)
+                            .foregroundColor(Color(Color.primaryColor))
+                        + Text("님")
+                            .foregroundColor(Color("Black"))
+                    )
+                    .title1()
                     Text("오늘은 뭘 해볼까요?")
+                        .foregroundColor(Color("Black"))
+                        .title1()
                 }
-                .foregroundColor(Color("Black"))
-                .title1()
+
                 
                 Text("준비됐다면 꼭 눌러서 루틴을 시작해주세요.")
                     .subhead()
@@ -53,7 +60,7 @@ struct HeaderSection: View {
         }
         .padding(.horizontal)
         .padding(.top, 80)
-        .padding(.bottom, 24)
+        .padding(.bottom, 6)
         .background(Color.white)
     }
 }
