@@ -48,7 +48,21 @@ struct RegisterView: View {
                             print("SignUp failed:", error)
                         }
                     }
-                        .padding(.bottom, 60)
+                    .padding(.bottom, 12)
+                    NavigationLink {
+                        AuthView()
+                    } label: {
+                        HStack(spacing: 0) {
+                            Text("이미 계정이 있으신가요?")
+                                .foregroundColor(Color.darkGray)
+                            Text(" 로그인하기")
+                                .foregroundColor(Color.primaryColor)
+                                .fontWeight(.semibold)
+                        }
+                        .font(.footnote)
+                    }
+                    Spacer()
+                        .frame(height: 60)
                 }
                 .frame(maxHeight: .infinity, alignment: .top)
                 if isLoggingIn {

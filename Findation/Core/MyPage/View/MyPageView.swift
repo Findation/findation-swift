@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MyPageScreen: View {
+    @EnvironmentObject var session: SessionStore
     @State private var fishBobbingOffset: CGFloat = 0
     @State private var isShowingMenu = false  // 메뉴뷰로 이동 트리거
 

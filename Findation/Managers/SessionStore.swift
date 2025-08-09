@@ -95,7 +95,9 @@ class SessionStore: ObservableObject {
         KeychainHelper.delete(forKey: ACCESS_TOKEN)
         KeychainHelper.delete(forKey: REFRESH_TOKEN)
         KeychainHelper.delete(forKey: NICKNAME)
-        isAuthenticated = false
+        DispatchQueue.main.async {
+            self.isAuthenticated = false
+        }
     }
 
     func refreshTokenIfNeeded() async {

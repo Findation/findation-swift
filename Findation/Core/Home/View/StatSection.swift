@@ -12,13 +12,15 @@ struct StatSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("내 통계")
-                .font(.headline)
-                .foregroundColor(.primary)
+            VStack(alignment: .leading, spacing: 8){
+                Text("내 통계")
+                    .font(.headline)
+                    .foregroundColor(Color(Color.primaryColor))
 
-            Text("지난 일주일 간의 성취도를 확인하세요.")
-                .font(.subheadline)
-                .foregroundColor(.gray)
+                Text("지난 일주일 간의 성취도를 확인하세요.")
+                    .font(.subheadline)
+                    .foregroundColor(Color(Color.darkGrayColor))
+            }
 
             GeometryReader { geometry in
                 let maxData = data.max() ?? 1
@@ -54,6 +56,7 @@ struct StatSection: View {
         .padding()
         .background(Color.white)
         .cornerRadius(16)
+        .shadow(color: Color(hex: "A2C6FF"), radius: 5, x: 0, y: 1)
         .padding(.horizontal)
     }
 }

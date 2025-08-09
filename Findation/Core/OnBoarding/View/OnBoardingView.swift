@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding = false
     @State private var shouldNavigateToNextScreen: Bool = false
     @State private var selectedActivities: Set<String> = []
     @State private var showError = false
