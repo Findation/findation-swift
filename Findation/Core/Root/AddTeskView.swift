@@ -58,7 +58,7 @@ struct AddTaskView: View {
                                 }
                             }
                         } else {
-                            RoutineAPI.patchRoutine(id: routineToEdit!.id, title: taskText, category: categoryText, is_repeated: calculateIsRepeatedBitmask(selectedDays)) { result in
+                            RoutineAPI.patchRoutine(id: routineToEdit!.id, title: taskText, category: categoryText, is_repeated: calculateMaskMonFirst(selectedDays)) { result in
                                 switch result {
                                 case .success:
                                     // 루틴 수정 성공
@@ -145,7 +145,7 @@ struct AddTaskView: View {
             if let editing = routineToEdit {
                 taskText = editing.title
                 categoryText = editing.category
-                selectedDays = decodeIsRepeatedBitmask(editing.isRepeated)
+                selectedDays = decodeMaskMonFirst(editing.isRepeated)
             }
         }
     }

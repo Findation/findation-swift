@@ -49,7 +49,7 @@ enum RoutineAPI {
         let parameters: [String: Any] = [
             "title": title,
             "category": category,
-            "is_repeated": calculateIsRepeatedBitmask(weekdays)
+            "is_repeated": calculateMaskMonFirst(weekdays)
         ]
 
         AF.request(API.Routines.routineList,

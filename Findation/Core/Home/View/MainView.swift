@@ -16,6 +16,15 @@ struct MainView: View {
     private var routinesBinding: Binding<[Routine]> {
         Binding(get: { vm.routines }, set: { vm.routines = $0 })
     }
+    private var todaysRoutines: [Routine] {
+        vm.routines.filter { $0.matches(date: currentDate) }
+    }
+    private var todaysBinding: Binding<[Routine]> {
+        Binding(
+            get: { vm.routines.filter { $0.matches(date: currentDate) } },
+            set: { _ in /* no-op: 개별 액션(onEdit/onDelete 등)에서 원본 vm.routines를 갱신하므로 여기선 불필요 */ }
+        )
+    }
     let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
     
     @State private var currentDate = Date()
@@ -56,7 +65,7 @@ struct MainView: View {
                                     .padding(.bottom, 12)
 
                                 UIKitRoutineListView(
-                                    routines: routinesBinding,
+                                    routines: todaysBinding,
                                     onLongPressComplete: { routine in
                                         guard !routine.isCompleted else { return }
                                         startTimer(for: routine)
@@ -79,19 +88,23 @@ struct MainView: View {
                                         }
                                     },
                                     onComplete: { routine in
-                                        completeRoutine(routine)
+                                        Task {
+                                            await MainActor.run {
+                                                vm.markCompleted(routine.id)
+                                            }
+                                        }
                                         activeRoutine = routine
                                         showCompletionModal = true
 
                                         // 루틴 아래로 이동 후 scroll
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                            if let last = vm.routines.last {
+                                            if let last = todaysRoutines.last ?? vm.routines.last {
                                                 scrollProxy.scrollTo(last.id, anchor: .bottom)
                                             }
                                         }
                                     }
                                 )
-                                .frame(height: CGFloat(vm.routines.count * 56) + (vm.routines.count > 5 ? 40 : 0))
+                                .frame(height: CGFloat(todaysRoutines.count * 56) + (todaysRoutines.count > 5 ? 40 : 0))
                                 .padding(.bottom, 20)
 
                                 StatSection()
@@ -119,7 +132,13 @@ struct MainView: View {
                 }
                 
                 if showLastModal, let proofImage = proofImage, let routine = activeRoutine {
-                    LastModalView(title: routine.title,proofImage: proofImage, showLastModal: $showLastModal)
+                    LastModalView(title: routine.title,proofImage: proofImage, showLastModal: $showLastModal) {
+                        Task {
+                            await MainActor.run {
+                                vm.markCompleted(routine.id)
+                            }
+                        }
+                    }
                 }
                 
                 if let routine = activeRoutine {
@@ -142,9 +161,12 @@ struct MainView: View {
             .task { // 최초 진입 1회 페치
                 await vm.load()
             }
-            .sheet(isPresented: $showCamera) {
-                CameraPicker { image in
-                    self.proofImage = image
+            .fullScreenCover(isPresented: $showCamera) {
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    CameraPicker { image in
+                        self.proofImage = image
+                    }
                 }
             }
             .refreshable { // 당겨서 새로고침

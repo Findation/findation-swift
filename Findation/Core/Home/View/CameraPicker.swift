@@ -8,6 +8,9 @@ struct CameraPicker: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
+        picker.modalPresentationStyle = .fullScreen
+        picker.view.backgroundColor = .black
+        picker.navigationBar.barStyle = .black
         picker.delegate = context.coordinator
         return picker
     }

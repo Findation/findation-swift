@@ -19,3 +19,11 @@ struct Routine: Identifiable, Equatable, Codable {
         case createdAt  = "created_at"
     }
 }
+
+extension Routine {
+    var isRepeatedBitmask: Int { self.isRepeated }
+
+    func matches(date: Date, calendar: Calendar = .current) -> Bool {
+        return isScheduledOnDate(bitmask: isRepeatedBitmask, date: date, calendar: calendar)
+    }
+}

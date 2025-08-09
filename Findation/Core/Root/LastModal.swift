@@ -11,20 +11,25 @@ struct LastModalView: View {
     var title: String
     var proofImage: UIImage
     @Binding var showLastModal: Bool
+    var action: () -> Void = {}
 
     var body: some View {
-            VStack(spacing: 16) {
+            VStack(spacing: 8) {
                 Text("학습을 종료할까요?")
+                    .modifier(Bodytext())
                 Text(title)
+                    .modifier(Bodytext())
+                    .foregroundColor(Color(Color.primaryColor))
        
                 Image(uiImage: proofImage)
                     .resizable()
-                    .scaledToFit() // 비율 유지해서 맞춤
+                    .scaledToFit()
                     .frame(maxWidth: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
    
                 Button(action: {
                     showLastModal = false
+                    action()
                 }) {
                     Text("완료하기")
                         .foregroundColor(.white)
@@ -33,8 +38,10 @@ struct LastModalView: View {
                         .background(Color(Color.primaryColor))
                         .cornerRadius(12)
                 }
+                .padding(.top, 10)
+                .padding(.horizontal, 73)
             }
-            .padding(24)
+            .padding(20)
             .background(Color.white)
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)

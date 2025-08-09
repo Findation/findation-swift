@@ -36,7 +36,6 @@ class RoutineCell: UITableViewCell {
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
-        // ✅ 완료된 경우 실선 표시 + 롱프레스 비활성화 효과
         strikeThroughView.isHidden = !isCompleted
         contentView.alpha = isCompleted ? 0.6 : 1.0
     }
@@ -78,7 +77,6 @@ class RoutineCell: UITableViewCell {
             progressWidthConstraint!
         ])
 
-        // ✅ 빨간 실선
         strikeThroughView.backgroundColor = .systemRed
         strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
         strikeThroughView.isHidden = true
@@ -120,7 +118,7 @@ class RoutineCell: UITableViewCell {
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard !isCompleted else { return } // ✅ 완료된 경우 롱프레스 차단
+        guard !isCompleted else { return }
         guard let progressWidth = progressWidthConstraint else { return }
 
         switch gesture.state {

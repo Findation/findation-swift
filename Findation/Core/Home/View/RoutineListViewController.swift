@@ -38,21 +38,22 @@ class RoutineListViewController: UITableViewController {
                             trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
         let routine = routines[indexPath.row]
-
-        let complete = UIContextualAction(style: .normal, title: "완료") { [weak self] _, _, _ in
-            self?.onComplete?(routine)
-        }
-        complete.backgroundColor = .systemGreen
-
+        
         let edit = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, _ in
             self?.onEdit?(routine)
         }
-        edit.backgroundColor = .systemBlue
+        edit.backgroundColor = UIColor(named: "MediumGray")
 
         let delete = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, _ in
             self?.onDelete?(routine)
         }
+        delete.backgroundColor = UIColor(named: "Red")
 
-        return UISwipeActionsConfiguration(actions: [delete, edit, complete])
+        let complete = UIContextualAction(style: .normal, title: "완료") { [weak self] _, _, _ in
+            self?.onComplete?(routine)
+        }
+        complete.backgroundColor = UIColor(named: "Primary")
+
+        return UISwipeActionsConfiguration(actions: [complete, delete, edit])
     }
 }
