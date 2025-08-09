@@ -7,24 +7,20 @@
 
 import Foundation
 
-func calculateIsRepeatedBitmask(_ weekdays: [Bool]
-) -> Int {
-    var result = 0
-    for (index, selected) in weekdays.enumerated() {
-        if selected {
-            result |= (1 << (6 - index))
-        }
+func calculateMaskMonFirst(_ weekdays: [Bool]) -> Int {
+    var mask = 0
+    for (i, on) in weekdays.enumerated() where on {
+        mask |= (1 << i)
     }
-    return result
+    return mask
 }
 
-func decodeIsRepeatedBitmask(_ bitmask: Int) -> [Bool] {
-    var result: [Bool] = []
+func decodeMaskMonFirst(_ mask: Int) -> [Bool] {
+    (0..<7).map { ((mask >> $0) & 1) == 1 }
+}
 
-    for i in 0..<7 {
-        let bit = (bitmask >> (6 - i)) & 1
-        result.append(bit == 1)
-    }
-
-    return result
+func isScheduledOnDate(bitmask: Int, date: Date, calendar: Calendar = .current) -> Bool {
+     let weekday = calendar.component(.weekday, from: date)
+     let index = (weekday + 5) % 7
+     return (bitmask & (1 << index)) != 0
 }

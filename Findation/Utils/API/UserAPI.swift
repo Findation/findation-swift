@@ -5,7 +5,7 @@ enum UserAPI {
         let params = ["email": email, "password": password, "nickname": nickname]
         let headers: HTTPHeaders = ["Accept": "application/json", "Content-Type": "application/json"]
 
-        return try await AF.request(API.User.signUp,
+        return try await AF.request(Findation.API.User.signUp,
                                     method: .post,
                                     parameters: params,
                                     encoding: JSONEncoding.default,
