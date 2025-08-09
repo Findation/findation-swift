@@ -18,9 +18,19 @@ struct AddTaskView: View {
     @FocusState private var isFocusedCategory: Bool
 
     @State private var repeatWeekly: Bool = false
-    @State private var selectedDays: [String] = []
-    let days = ["월", "화", "수", "목", "금", "토", "일"]
-
+    @State private var selectedDays: [Bool] = Array(repeating: false, count: 7)
+    
+    func normalizeCategory() {
+        let trimmed = categoryText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if trimmed.hasPrefix("#") {
+            let noHash = trimmed.dropFirst().trimmingCharacters(in: .whitespaces)
+            categoryText = "# " + noHash
+        } else {
+            categoryText = "# " + trimmed
+        }
+    }
+    
     var body: some View {
         VStack {
             // MARK: - 상단 헤더
@@ -36,17 +46,29 @@ struct AddTaskView: View {
                     Spacer()
 
                     Button("완료") {
-                        let trimmedTitle = taskText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        let trimmedTag = categoryText.trimmingCharacters(in: .whitespacesAndNewlines)
-
-                        if var editing = routineToEdit,
-                           let index = routines.firstIndex(where: { $0.id == editing.id }) {
-                            routines[index].title = trimmedTitle
-                            routines[index].tag = trimmedTag
+                        if routineToEdit == nil {
+                            RoutineAPI.postRoutine(title: taskText, category: categoryText, weekdays: selectedDays) { result in
+                                switch result {
+                                case .success:
+                                    // 루틴 등록 성공
+                                    print("ADD ROUTINE SUCCESS")
+                                case .failure:
+                                    // 루틴 등록 실패
+                                    print("ADD ROUTINE FAILED")
+                                }
+                            }
                         } else {
-                            routines.append(Routine(title: trimmedTitle, tag: trimmedTag))
+                            RoutineAPI.patchRoutine(id: routineToEdit!.id, title: taskText, category: categoryText, is_repeated: calculateMaskMonFirst(selectedDays)) { result in
+                                switch result {
+                                case .success:
+                                    // 루틴 수정 성공
+                                    print("PATCH ROUTINE SUCCESS")
+                                case .failure:
+                                    // 루틴 등록 실패
+                                    print("PATCH ROUTINE FAILED")
+                                }
+                            }
                         }
-
                         dismiss()
                     }
                     .disabled(taskText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || categoryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -64,14 +86,16 @@ struct AddTaskView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
                 .focused($isFocusedCategory)
-                .onChange(of: categoryText) {
-                    if !categoryText.hasPrefix("#") {
-                        categoryText = "# " + categoryText.replacingOccurrences(of: "# ", with: "")
+                .onChange(of: isFocusedCategory) { oldValue, newValue in
+                    if oldValue == true && newValue == false {
+                        normalizeCategory()
                     }
                 }
 
             // MARK: - 루틴 텍스트 입력
             TextField("할 일을 입력하세요.", text: $taskText)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled(true)
                 .font(.body)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
@@ -88,49 +112,17 @@ struct AddTaskView: View {
                     isFocusedTask = true
                 }
 
-            // MARK: - 반복 옵션
-            HStack {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(repeatWeekly ? Color.blue : Color.gray, lineWidth: 1)
-                        .frame(width: 20, height: 22)
-                        .background(repeatWeekly ? Color.white : Color.clear)
-                        .cornerRadius(4)
-
-                    if repeatWeekly {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.blue)
-                    }
-                }
-                .onTapGesture {
-                    repeatWeekly.toggle()
-                }
-
-                Text("매주 반복할래요")
-                    .font(.body)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 10)
-                    .onTapGesture {
-                        repeatWeekly.toggle()
-                    }
-
-                Spacer()
-            }
-            .padding(.vertical, 20)
-            .padding(.leading, 20)
-
             // MARK: - 요일 선택
             HStack {
-                ForEach(days, id: \.self) { day in
-                    Text(day)
+                ForEach(DATES.indices, id: \.self) { index in
+                    Text(DATES[index])
                         .font(.body)
                         .frame(width: 45, height: 28)
                         .background(
-                            selectedDays.contains(day) ? Color.blue : Color.white
+                            selectedDays[index] ? Color.blue : Color.white
                         )
                         .foregroundColor(
-                            selectedDays.contains(day) ? Color.white : Color.blue
+                            selectedDays[index] ? Color.white : Color.blue
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 999)
@@ -138,11 +130,7 @@ struct AddTaskView: View {
                         )
                         .cornerRadius(999)
                         .onTapGesture {
-                            if selectedDays.contains(day) {
-                                selectedDays.removeAll { $0 == day }
-                            } else {
-                                selectedDays.append(day)
-                            }
+                            selectedDays[index].toggle()
                         }
                 }
             }
@@ -156,7 +144,8 @@ struct AddTaskView: View {
         .onAppear {
             if let editing = routineToEdit {
                 taskText = editing.title
-                categoryText = editing.tag
+                categoryText = editing.category
+                selectedDays = decodeMaskMonFirst(editing.isRepeated)
             }
         }
     }
@@ -168,3 +157,5 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+
+

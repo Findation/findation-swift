@@ -14,6 +14,7 @@ class SessionStore: ObservableObject {
     
     let ACCESS_TOKEN = "accessToken"
     let REFRESH_TOKEN = "refreshToken"
+    let NICKNAME = "nickname"
     let LAST_REFRESH_AT = "LAST_REFRESH_AT"
     
     init() {
@@ -81,9 +82,10 @@ class SessionStore: ObservableObject {
            }
        }
 
-    func login(accessToken: String, refreshToken: String) {
+    func login(accessToken: String, refreshToken: String, nickname: String) {
         KeychainHelper.save(accessToken, forKey: ACCESS_TOKEN)
         KeychainHelper.save(refreshToken, forKey: REFRESH_TOKEN)
+        KeychainHelper.save(nickname, forKey: NICKNAME)
         DispatchQueue.main.async {
             self.isAuthenticated = true
         }
@@ -92,6 +94,7 @@ class SessionStore: ObservableObject {
     func logout() {
         KeychainHelper.delete(forKey: ACCESS_TOKEN)
         KeychainHelper.delete(forKey: REFRESH_TOKEN)
+        KeychainHelper.delete(forKey: NICKNAME)
         isAuthenticated = false
     }
 

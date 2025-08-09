@@ -8,7 +8,7 @@ class RoutineCell: UITableViewCell {
     var onComplete: (() -> Void)?
 
     private let titleLabel = UILabel()
-    private let tagLabel = PaddingLabel()
+    private let categoryLabel = PaddingLabel()
     private let timeLabel = UILabel()
     private let progressView = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
@@ -32,11 +32,10 @@ class RoutineCell: UITableViewCell {
 
     func configure(with routine: Routine) {
         titleLabel.text = routine.title
-        tagLabel.text = routine.tag
+        categoryLabel.text = routine.category
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
-        // ✅ 완료된 경우 실선 표시 + 롱프레스 비활성화 효과
         strikeThroughView.isHidden = !isCompleted
         contentView.alpha = isCompleted ? 0.6 : 1.0
     }
@@ -49,17 +48,17 @@ class RoutineCell: UITableViewCell {
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
 
         // MARK: tag
-        tagLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        tagLabel.textColor = .systemBlue
-        tagLabel.layer.borderColor = UIColor.systemBlue.cgColor
-        tagLabel.layer.borderWidth = 1
-        tagLabel.layer.cornerRadius = 10
-        tagLabel.clipsToBounds = true
-        tagLabel.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.05)
-        tagLabel.topInset = 3
-        tagLabel.bottomInset = 3
-        tagLabel.leftInset = 8
-        tagLabel.rightInset = 8
+        categoryLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        categoryLabel.textColor = .systemBlue
+        categoryLabel.layer.borderColor = UIColor.systemBlue.cgColor
+        categoryLabel.layer.borderWidth = 1
+        categoryLabel.layer.cornerRadius = 10
+        categoryLabel.clipsToBounds = true
+        categoryLabel.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.05)
+        categoryLabel.topInset = 3
+        categoryLabel.bottomInset = 3
+        categoryLabel.leftInset = 8
+        categoryLabel.rightInset = 8
 
         // MARK: time
         timeLabel.font = UIFont.systemFont(ofSize: 12)
@@ -78,7 +77,6 @@ class RoutineCell: UITableViewCell {
             progressWidthConstraint!
         ])
 
-        // ✅ 빨간 실선
         strikeThroughView.backgroundColor = .systemRed
         strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
         strikeThroughView.isHidden = true
@@ -91,7 +89,7 @@ class RoutineCell: UITableViewCell {
         ])
 
         // MARK: layout stack
-        let titleTagStack = UIStackView(arrangedSubviews: [titleLabel, tagLabel])
+        let titleTagStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel])
         titleTagStack.axis = .horizontal
         titleTagStack.spacing = 8
         titleTagStack.alignment = .center
@@ -120,7 +118,7 @@ class RoutineCell: UITableViewCell {
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard !isCompleted else { return } // ✅ 완료된 경우 롱프레스 차단
+        guard !isCompleted else { return }
         guard let progressWidth = progressWidthConstraint else { return }
 
         switch gesture.state {
