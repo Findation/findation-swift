@@ -6,22 +6,23 @@ struct MainView: View {
     @StateObject private var vm = RoutinesViewModel()
     
     @State private var showAllRoutines = false
-    // 바인딩 필요 시:
-    private var routinesBinding: Binding<[Routine]> {
-        Binding(get: { vm.routines }, set: { vm.routines = $0 })
-    }
+
     private var todaysRoutines: [Routine] {
         vm.routines.filter { $0.matches(date: currentDate) }
     }
     private var visibleRoutines: [Routine] {
-        showAllRoutines ? todaysRoutines : Array(todaysRoutines.prefix(5))
+        let sorted = todaysRoutines.sorted {
+            ($0.isCompleted ? 1 : 0) < ($1.isCompleted ? 1 : 0)
+        }
+        return showAllRoutines ? sorted : Array(sorted.prefix(5))
     }
     private var todaysBinding: Binding<[Routine]> {
         Binding(
             get:{visibleRoutines },
-            set: { _ in /* no-op: 개별 액션(onEdit/onDelete 등)에서 원본 vm.routines를 갱신하므로 여기선 불필요 */ }
+            set: { _ in }
         )
     }
+    
     let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
     
     @State private var currentDate = Date()
@@ -206,6 +207,7 @@ struct MainView: View {
                             .task(id: session.isAuthenticated) {
                                 guard session.isAuthenticated else { return }
                                 await vm.load()
+                                print(KeychainHelper.load(forKey: "accessToken") ?? "어푸")
                             }
                             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                                 Task { await vm.load() }
@@ -222,7 +224,6 @@ struct MainView: View {
                                 Task { await vm.load() }
                             }) {
                                 AddTaskView(
-                                    routines: routinesBinding,
                                     routineToEdit: $editTargetRoutine
                                 )
                                     .id(editTargetRoutine?.id)

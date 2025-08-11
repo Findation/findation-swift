@@ -2,7 +2,6 @@ import SwiftUI
 
 struct AddTaskView: View {
     @Environment(\.dismiss) var dismiss
-    @Binding var routines: [Routine]
     @Binding var routineToEdit: Routine?
 
     @State private var taskText: String = ""
