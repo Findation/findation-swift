@@ -34,4 +34,9 @@ enum API {
             return "\(baseURL)/friends/routines/\(id)/"
         }
     }
+    
+    enum UsedTime {
+        static let usedTime: String = "\(baseURL)/used_time/"
+        static let usedTimeRange: String = "\(baseURL)/used_time/range/"
+    }
 }
