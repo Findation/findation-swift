@@ -46,7 +46,6 @@ struct AuthView: View {
                             session.login(accessToken: auth.access,
                                           refreshToken: auth.refresh,
                                           nickname: auth.user.nickname)
-                            // ✅ 여기서 화면 전환은 RootView의 분기(isAuthenticated)에 의해 자동 진행
                         } catch {
                             errorMessage = "로그인에 실패했어요. 입력 정보를 확인해 주세요."
                             showPopup = true
@@ -59,7 +58,7 @@ struct AuthView: View {
                     } label: {
                         HStack(spacing: 0) {
                             Text("아직 계정이 없으신가요?")
-                                .foregroundColor(Color.darkGrayColor)   // ✅ 이름 수정
+                                .foregroundColor(Color.darkGrayColor)  
                             Text(" 계정 만들기")
                                 .foregroundColor(Color.primaryColor)
                                 .fontWeight(.semibold)

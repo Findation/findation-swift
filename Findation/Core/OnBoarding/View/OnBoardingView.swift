@@ -43,7 +43,7 @@ struct OnboardingView: View {
                     .padding(.bottom, 10)
             }
             .navigationDestination(isPresented: $shouldNavigateToNextScreen) {
-                OnboardingView()
+                FindationTabView()
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .navigationBarBackButtonHidden(true)
