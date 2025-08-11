@@ -236,7 +236,7 @@ fileprivate struct PopupPhotoViewer: View {
                             .frame(width: geo.size.width, height: 360)
                             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                        Text("오늘은 저장된 사진이 없습니다.")
+                        Text("이 날은 저장된 사진이 없습니다.")
                             .font(.body.weight(.medium))
                             .foregroundColor(.white)
                             .padding(.horizontal, 16)
