@@ -163,6 +163,21 @@ struct MainView: View {
                 if showLastModal, let proofImage = proofImage, let routine = activeRoutine {
                     LastModalView(title: routine.title,proofImage: proofImage, showLastModal: $showLastModal) {
                         Task {
+                            let usedSeconds = Int(elapsedSnapshot.rounded())
+
+                            guard let imageData = proofImage.jpegData(compressionQuality: 0.8) else {
+                                print("이미지 인코딩 실패")
+                                return
+                            }
+                            
+                            UsedTimeAPI.postUsedTime(usedTime: usedSeconds, satisfaction: 5, image: imageData) { result in
+                            switch result {
+                                case .success:
+                                    print("성공")
+                                case .failure(let error):
+                                    print("실패 \(error)")
+                                }
+                            }
                             await MainActor.run {
                                 vm.markCompleted(routine.id)
                             }

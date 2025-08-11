@@ -15,6 +15,12 @@
 import SwiftUI
 
 struct ExploreSection: View {
+    @State var selectedCategory: String = "study"
+    let dummyData: [String: [String]] = [
+        "study": ["유기화학 3단원 예습", "SwiftUI 공부", "Figma 강의 4강 시청", "컴활 문제집 풀기"],
+        "exercise": ["왼손 드리볼 300회", "풀업 30개", "트레디밀러닝 40분"]
+    ]
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 8){
@@ -27,26 +33,19 @@ struct ExploreSection: View {
             }
             
             HStack {
-                Text("#공부")
-                    .footNote()
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .foregroundColor(Color("Primary"))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 999)
-                            .stroke(Color("Primary"), lineWidth: 1)
-                    )
-                    .cornerRadius(999)
-                Text("#공부")
-                    .footNote()
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .foregroundColor(Color("Primary"))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 999)
-                            .stroke(Color("Primary"), lineWidth: 1)
-                    )
-                    .cornerRadius(999)
+                CategoryButton(
+                            title: "운동",
+                            isSelected: selectedCategory == "exercise"
+                        ) {
+                            selectedCategory = "exercise"
+                        }
+
+                        CategoryButton(
+                            title: "공부",
+                            isSelected: selectedCategory == "study"
+                        ) {
+                            selectedCategory = "study"
+                        }
                 Spacer()
                 Image(systemName: "plus.circle")
                     .foregroundColor(Color("Primary"))
@@ -54,11 +53,11 @@ struct ExploreSection: View {
             }
             
             VStack(spacing: 5) {
-                ForEach(["유기화학 3단원 예습", "SwiftUI 공부", "Figma 강의 4강 시청", "컴활 문제집 풀기"], id: \.self) { item in
+                ForEach(dummyData[selectedCategory, default: []], id: \.self) { item in
                     Text(item)
                         .subhead()
                         .foregroundColor(Color(Color.darkGrayColor))
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 8)
                         .padding(.horizontal, 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color(Color.lightGrayColor))
@@ -71,6 +70,32 @@ struct ExploreSection: View {
         .cornerRadius(15)
         .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
         .padding(.horizontal, 20)
+    }
+}
+
+struct CategoryButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text("#\(title)")
+                .footNote()
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    isSelected ? Color(Color.primaryColor) : Color.clear
+                )
+                .foregroundColor(
+                    isSelected ? Color.white :Color(Color.primaryColor)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 999)
+                        .stroke(Color(Color.primaryColor), lineWidth: isSelected ? 0 : 1)
+                )
+                .cornerRadius(999)
+        }
     }
 }
 

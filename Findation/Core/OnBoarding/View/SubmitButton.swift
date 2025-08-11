@@ -33,7 +33,7 @@ struct SubmitButton: View {
                 .modifier(Title2())
                 .frame(maxWidth: .infinity)   // ✅ 텍스트를 최대 너비로
                 .frame(height: 50)
-                .background(isSatisfied ? Color.primaryColor : Color.darkGrayColor)
+                .background(isSatisfied ? Color.primaryColor : Color.primaryColor.opacity(0.7))
                 .cornerRadius(.infinity)
                 .contentShape(Rectangle())
         }
