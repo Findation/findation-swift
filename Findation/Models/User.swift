@@ -10,7 +10,6 @@ import Foundation
 struct User: Decodable {
     let id: String
     let email: String
-    let password: String
     let nickname: String
     let rank: Int
     let totalTime: Double
@@ -19,7 +18,6 @@ struct User: Decodable {
     enum CodingKeys: String, CodingKey {
         case id
         case email
-        case password
         case nickname
         case rank
         case totalTime = "total_time"

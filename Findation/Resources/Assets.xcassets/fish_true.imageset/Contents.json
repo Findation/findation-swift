@@ -1,15 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "fish_true.png",
+      "filename" : "fish_true@1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "fish_true@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "fish_true@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
