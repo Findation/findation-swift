@@ -1,5 +1,8 @@
 import SwiftUI
 
+
+// MARK: - 모델 (백엔드 사진 예시)
+
 struct BackendPhoto: Identifiable, Hashable {
     let id = UUID()
     let date: Date
@@ -7,12 +10,20 @@ struct BackendPhoto: Identifiable, Hashable {
 }
 
 struct CollectedChangeView: View {
+    // MARK: - 상태
     @State private var currentDate: Date = Date()
     @State private var selectedDate: Date? = nil
-    @State private var showPopup: Bool = false
+
+    @State private var showSheet: Bool = false
+
+    @State private var photosByDay: [Date: [BackendPhoto]] = [:]
     @State private var selectedDayPhotos: [BackendPhoto] = []
     @State private var currentPhotoIndex: Int = 0
-    @State private var photosByDay: [Date: [BackendPhoto]] = [:]
+
+    // ✅ 사진은 없지만 ‘활동은 한’ 날
+    @State private var activityDoneDays: Set<Date> = []
+
+    // MARK: - 상수/유틸
 
     private let calendar = Calendar.current
     private let weekdays = ["월", "화", "수", "목", "금", "토", "일"]
@@ -31,10 +42,13 @@ struct CollectedChangeView: View {
         static func firstWeekdayOffset(for date: Date, calendar: Calendar = .current) -> Int {
             let comps = calendar.dateComponents([.year, .month], from: date)
             guard let firstOfMonth = calendar.date(from: comps) else { return 0 }
-            let weekday = calendar.component(.weekday, from: firstOfMonth)
-            return (weekday + 5) % 7
+
+            let weekday = calendar.component(.weekday, from: firstOfMonth) // 1:일~7:토
+            return (weekday + 5) % 7 // 월(2)을 0으로 보정해서 월=0 시작
         }
     }
+
+    // MARK: - 달력 보조
 
     private func changeMonth(by value: Int) {
         if let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) {
@@ -42,6 +56,7 @@ struct CollectedChangeView: View {
         }
     }
     private func TodayDate() { currentDate = Date() }
+
     private func dateFor(day: Int) -> Date? {
         var comps = calendar.dateComponents([.year, .month], from: currentDate)
         comps.day = day
@@ -56,21 +71,6 @@ struct CollectedChangeView: View {
         return calendar.compare(d, to: Date(), toGranularity: .day) == .orderedAscending
     }
 
-    private func loadPhotosFromBackend() {
-        let today = Date()
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
-        let demo: [BackendPhoto] = [
-            BackendPhoto(date: yesterday, imageURL: URL(string: "https://picsum.photos/seed/a/800/1200")!),
-            BackendPhoto(date: yesterday.addingTimeInterval(3600), imageURL: URL(string: "https://picsum.photos/seed/b/800/1200")!)
-        ]
-        var grouped: [Date: [BackendPhoto]] = [:]
-        for p in demo {
-            let key = calendar.startOfDay(for: p.date)
-            grouped[key, default: []].append(p)
-        }
-        photosByDay = grouped
-    }
-
     private func dayKey(for day: Int) -> Date? {
         guard let d = dateFor(day: day) else { return nil }
         return calendar.startOfDay(for: d)
@@ -79,6 +79,37 @@ struct CollectedChangeView: View {
         guard let key = dayKey(for: day) else { return nil }
         return photosByDay[key]?.first
     }
+
+    // MARK: - 데모 데이터 로드(백엔드 연결 전)
+    private func loadPhotosFromBackend() {
+        let today = Date()
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: today)!
+        let threeDaysAgo = calendar.date(byAdding: .day, value: -3, to: today)!
+
+        // 사진 있는 날(예시)
+        let demoPhotos: [BackendPhoto] = [
+            BackendPhoto(date: yesterday, imageURL: URL(string: "https://picsum.photos/seed/a/800/1200")!),
+            BackendPhoto(date: yesterday.addingTimeInterval(3600), imageURL: URL(string: "https://picsum.photos/seed/b/800/1200")!),
+            BackendPhoto(date: twoDaysAgo, imageURL: URL(string: "https://picsum.photos/seed/c/800/1200")!)
+        ]
+
+        var grouped: [Date: [BackendPhoto]] = [:]
+        for p in demoPhotos {
+
+            let key = calendar.startOfDay(for: p.date)
+            grouped[key, default: []].append(p)
+        }
+        photosByDay = grouped
+
+
+        // ✅ “활동만 하고 사진은 없는” 날(예시) → 파랑 원으로 표시됨
+        activityDoneDays = [
+            calendar.startOfDay(for: threeDaysAgo)
+        ]
+    }
+
+    // MARK: - View
 
     var body: some View {
         let offset = CalendarHelper.firstWeekdayOffset(for: currentDate)
@@ -89,6 +120,9 @@ struct CollectedChangeView: View {
         ZStack {
             VStack(spacing: 0) {
                 VStack(spacing: 0 ) {
+
+                    // 헤더 (기존 UI 유지)
+
                     HStack {
                         Button { changeMonth(by: -1) } label: {
                             Image(systemName: "arrowtriangle.left.fill")
@@ -103,7 +137,9 @@ struct CollectedChangeView: View {
                                 .foregroundStyle(Color("Primary"))
                         }
                         Spacer()
-                        Button { TodayDate() } label: {
+
+                        Button { TodayDate() } label : {
+
                             Text("오늘")
                                 .caption1()
                                 .foregroundColor(Color("Primary"))
@@ -111,73 +147,98 @@ struct CollectedChangeView: View {
                                 .background(Color("Secondary"))
                                 .cornerRadius(11)
                         }
+
                     }
                     .padding(.trailing, 16)
                     .padding(.bottom, 16)
 
+                    // 요일
                     LazyVGrid(columns: columns, spacing: 8) {
                         ForEach(weekdays, id: \.self) { day in
-                            Text(day).font(.caption).foregroundColor(.black)
+                            Text(day)
+                                .font(.caption)
+                                .foregroundColor(.black)
                         }
                     }
                     .padding(.bottom, 7)
 
+                    // 날짜 그리드 (규칙 반영)
                     LazyVGrid(columns: columns, spacing: 8) {
                         ForEach(0..<(offset + days), id: \.self) { index in
                             if index < offset {
-                                Color.clear.frame(width: 40, height: 40)
+                                Color.clear
+                                    .frame(width: 40, height: 40)
                             } else {
                                 let day = index - offset + 1
-                                let isTodayFlag = isToday(day: day)
                                 let past = isPast(day: day)
+                                let todayFlag = isToday(day: day)
+                                let key = dayKey(for: day)
 
                                 ZStack {
                                     if past {
                                         if let first = firstPhoto(of: day) {
+                                            // 사진 인증 O → 썸네일
                                             AsyncImage(url: first.imageURL) { phase in
                                                 switch phase {
                                                 case .success(let img):
-                                                    img.resizable().scaledToFill()
+                                                    img.resizable()
+                                                        .scaledToFill()
                                                         .frame(width: 40, height: 40)
                                                         .clipped()
                                                         .opacity(0.3)
                                                 case .failure(_):
-                                                    Color("Primary").frame(width: 40, height: 40)
+                                                    Color("Primary")
                                                 case .empty:
-                                                    Color.gray.opacity(0.15).frame(width: 40, height: 40)
+                                                    Color.gray.opacity(0.15)
                                                 @unknown default:
-                                                    Color("Primary").frame(width: 40, height: 40)
+                                                    Color("Primary")
                                                 }
                                             }
                                             .clipShape(Circle())
+                                        } else if let k = key, activityDoneDays.contains(k) {
+                                            // 사진 X + 활동 O → 파랑
+                                            Color("Primary")
+                                                .frame(width: 40, height: 40)
+                                                .clipShape(Circle())
                                         } else {
-                                            Color("Primary").frame(width: 40, height: 40).clipShape(Circle())
+                                            // 사진 X + 활동 X → 회색(미수행)
+                                            Color.gray.opacity(0.3)
+                                                .frame(width: 40, height: 40)
+                                                .clipShape(Circle())
                                         }
                                     } else {
-                                        Color.gray.opacity(0.3).frame(width: 40, height: 40).clipShape(Circle())
+                                        // 미래 날짜 → 회색
+                                        Color.gray.opacity(0.3)
+                                            .frame(width: 40, height: 40)
+                                            .clipShape(Circle())
                                     }
-                                    Text("\(day)").foregroundColor(.white)
+
+                                    Text("\(day)")
+                                        .foregroundColor(.white)
                                 }
                                 .overlay(
                                     Circle()
                                         .stroke(Color.blue, lineWidth: 2)
                                         .frame(width: 40, height: 40)
-                                        .opacity(isTodayFlag ? 1 : 0)
+                                        .opacity(todayFlag ? 1 : 0)
                                 )
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    if past, let key = dayKey(for: day) {
-                                        selectedDate = key
-                                        selectedDayPhotos = photosByDay[key] ?? []
+                                    // 과거 날짜만 시트 열기(사진 유무 상관없이 열림)
+                                    if past, let k = key {
+                                        selectedDate = k
+                                        selectedDayPhotos = photosByDay[k] ?? []
                                         currentPhotoIndex = 0
-                                        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
-                                            showPopup = true
-                                        }
+                                        showSheet = true
                                     }
                                 }
                             }
+
                         }
+                        .padding(.top, 12)
+                        .padding(.trailing, 12)
                     }
+
                     .padding(.bottom, 43)
 
                     Spacer(minLength: 0)
@@ -187,185 +248,21 @@ struct CollectedChangeView: View {
                 .background(Color.white)
                 .cornerRadius(10)
                 .frame(maxHeight: .infinity, alignment: .top)
+                .animation(nil, value: numRows)
             }
-
-            if showPopup {
-                Color.black.opacity(0.35)
-                    .ignoresSafeArea()
-                    .onTapGesture { closePopup() }
-
-                PopupPhotoViewer(
-                    date: selectedDate ?? Date(),
-                    photos: selectedDayPhotos,
-                    currentIndex: $currentPhotoIndex,
-                    onClose: { closePopup() }
-                )
-                .zIndex(1)
-            }
+            .shadow(radius: 10)
         }
         .onAppear { loadPhotosFromBackend() }
-    }
-
-    private func closePopup() {
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.95)) {
-            showPopup = false
-        }
-    }
-}
-
-fileprivate struct PopupPhotoViewer: View {
-    let date: Date
-    let photos: [BackendPhoto]
-    @Binding var currentIndex: Int
-    var onClose: () -> Void
-
-    private let pillFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "M/d"
-        return f
-    }()
-
-    var body: some View {
-        VStack(spacing: 0) {
-            GeometryReader { geo in
-                if photos.isEmpty {
-                    // 사진이 없는 경우
-                    ZStack {
-                        Color.gray.opacity(0.1)
-                            .frame(width: geo.size.width, height: 360)
-                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-
-                        Text("이 날은 저장된 사진이 없습니다.")
-                            .font(.body.weight(.medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Capsule())
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        Button(action: onClose) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
-                                .padding(8)
-                                .background(Color.black.opacity(0.35))
-                                .clipShape(Circle())
-                        }
-                        .padding(.top, 12)
-                        .padding(.trailing, 12)
-                    }
-                    .overlay(alignment: .top) {
-                        Text(pillFormatter.string(from: date))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(Color("Primary"))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.white)
-                            .clipShape(Capsule())
-                            .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 2)
-                            .padding(.top, 12)
-                    }
-                } else {
-                    // 사진이 있는 경우
-                    let imgView: some View = Group {
-                        if let current = photos[safe: currentIndex] {
-                            AsyncImage(url: current.imageURL) { phase in
-                                switch phase {
-                                case .success(let img):
-                                    img.resizable().scaledToFill()
-                                        .frame(width: geo.size.width, height: 360)
-                                        .clipped()
-                                case .failure(_):
-                                    Color.gray.opacity(0.15)
-                                case .empty:
-                                    ZStack { Color.gray.opacity(0.08); ProgressView() }
-                                @unknown default:
-                                    Color.gray.opacity(0.15)
-                                }
-                            }
-                        } else {
-                            Color.gray.opacity(0.1)
-                        }
-                    }
-
-                    imgView
-                        .overlay(Rectangle().fill(.black.opacity(0.35)))
-                        .overlay(alignment: .topTrailing) {
-                            Button(action: onClose) {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .padding(8)
-                                    .background(Color.black.opacity(0.35))
-                                    .clipShape(Circle())
-                            }
-                            .padding(.top, 12)
-                            .padding(.trailing, 12)
-                        }
-                        .overlay(alignment: .top) {
-                            Text(pillFormatter.string(from: date))
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundColor(Color("Primary"))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(.white)
-                                .clipShape(Capsule())
-                                .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 2)
-                                .padding(.top, 12)
-                        }
-                        .overlay {
-                            HStack {
-                                Button {
-                                    withAnimation(.easeInOut(duration: 0.18)) {
-                                        currentIndex = max(0, currentIndex - 1)
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.left")
-                                        .font(.title3.weight(.semibold))
-                                        .foregroundStyle(.white)
-                                        .padding(8)
-                                        .background(.black.opacity(0.35))
-                                        .clipShape(Circle())
-                                }
-                                .disabled(currentIndex == 0)
-                                .opacity(currentIndex == 0 ? 0.5 : 1)
-
-                                Spacer()
-
-                                Button {
-                                    withAnimation(.easeInOut(duration: 0.18)) {
-                                        currentIndex = min(photos.count - 1, currentIndex + 1)
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.right")
-                                        .font(.title3.weight(.semibold))
-                                        .foregroundStyle(.white)
-                                        .padding(8)
-                                        .background(.black.opacity(0.35))
-                                        .clipShape(Circle())
-                                }
-                                .disabled(currentIndex >= max(photos.count - 1, 0))
-                                .opacity(currentIndex >= max(photos.count - 1, 0) ? 0.5 : 1)
-                            }
-                            .padding(.horizontal, 12)
-                        }
-                        .frame(width: geo.size.width, height: 360)
-                }
+        .sheet(isPresented: $showSheet) {
+            PhotoSheetView(
+                date: selectedDate ?? Date(),
+                photos: selectedDayPhotos,
+                currentIndex: $currentPhotoIndex
+            ) {
+                showSheet = false
             }
-            .frame(height: 360)
+            .presentationDetents([.height(420), .medium])
 
-            if !photos.isEmpty {
-                HStack(spacing: 6) {
-                    ForEach(0..<(max(photos.count, 1)), id: \.self) { i in
-                        Circle()
-                            .frame(width: i == currentIndex ? 8 : 6, height: i == currentIndex ? 8 : 6)
-                            .foregroundStyle(i == currentIndex ? .white : .white.opacity(0.5))
-                    }
-                }
-                .padding(.top, 10)
-            }
         }
         .padding(.horizontal, 16)
         .frame(maxWidth: 520)
@@ -384,12 +281,75 @@ fileprivate struct PopupPhotoViewer: View {
     }
 }
 
-fileprivate extension Collection {
-    subscript(safe index: Index) -> Element? {
-        indices.contains(index) ? self[index] : nil
-    }
-}
 
-#Preview {
-    CollectedChangeView()
+// MARK: - 사진 시트
+fileprivate struct PhotoSheetView: View {
+    let date: Date
+    let photos: [BackendPhoto]
+    @Binding var currentIndex: Int
+    var onClose: () -> Void
+
+    private let pillFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ko_KR")
+        f.dateFormat = "yyyy년 M월 d일 (E)"
+        return f
+    }()
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text(pillFormatter.string(from: date))
+                .font(.headline)
+
+            if photos.isEmpty {
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.gray.opacity(0.3), lineWidth: 1)
+                    .background(Color.gray.opacity(0.08))
+                    .frame(height: 260)
+                    .overlay(
+                        Text("이 날은 저장된 사진이 없습니다.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    )
+                    .padding(.horizontal)
+            } else {
+                TabView(selection: $currentIndex) {
+                    ForEach(photos.indices, id: \.self) { i in
+                        AsyncImage(url: photos[i].imageURL) { phase in
+                            switch phase {
+                            case .success(let img):
+                                img.resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: .infinity, maxHeight: 260)
+                                    .tag(i)
+                            case .failure(_):
+                                Color.gray.opacity(0.15)
+                                    .frame(height: 260)
+                                    .overlay(Text("이미지 불러오기 실패").foregroundColor(.secondary))
+                                    .tag(i)
+                            case .empty:
+                                ZStack {
+                                    Color.gray.opacity(0.08)
+                                    ProgressView()
+                                }
+                                .frame(height: 260)
+                                .tag(i)
+                            @unknown default:
+                                Color.gray.opacity(0.15).frame(height: 260).tag(i)
+                            }
+                        }
+                    }
+                }
+                .frame(height: 260)
+                .tabViewStyle(.page(indexDisplayMode: .always))
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .padding(.horizontal)
+            }
+
+
+            Button("닫기") { onClose() }
+                .padding(.top, 4)
+        }
+        .padding()
+    }
 }

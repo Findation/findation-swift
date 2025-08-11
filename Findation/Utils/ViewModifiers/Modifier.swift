@@ -110,54 +110,65 @@ struct TimeSmall: ViewModifier {
     }
 }
 
-
-extension View {
-    func largeTitle() -> some View {
-        self.modifier(LargeTitle())
+    struct TimeSmall2: ViewModifier {
+        func body(content: Content) -> some View {
+            content
+                .font(.system(size: 24, weight: .thin))
+                .lineSpacing(1)
+        }
     }
 
-    func title1() -> some View {
-        self.modifier(Title1())
+    
+    extension View {
+        func largeTitle() -> some View {
+            self.modifier(LargeTitle())
+        }
+        
+        func title1() -> some View {
+            self.modifier(Title1())
+        }
+        
+        func title2() -> some View {
+            self.modifier(Title2())
+        }
+        
+        func title3() -> some View {
+            self.modifier(Title3())
+        }
+        func headline() -> some View {
+            self.modifier(Headline())
+        }
+        
+        func bodytext() -> some View {
+            self.modifier(Bodytext())
+        }
+        
+        func callOut() -> some View {
+            self.modifier(CallOut())
+        }
+        
+        func subhead() -> some View {
+            self.modifier(Subhead())
+        }
+        func footNote() -> some View {
+            self.modifier(Footnote())
+        }
+        
+        func caption1() -> some View {
+            self.modifier(Caption1())
+        }
+        
+        func caption2() -> some View {
+            self.modifier(Caption2())
+        }
+        
+        func timeLarge() -> some View {
+            self.modifier(TimeLarge())
+        }
+        func timeSmall() -> some View {
+            self.modifier(TimeSmall())
+        }
+        func timeSmall2() -> some View {
+            self.modifier(TimeSmall2())
+        }
     }
-
-    func title2() -> some View {
-        self.modifier(Title2())
-    }
-
-    func title3() -> some View {
-        self.modifier(Title3())
-    }
-    func headline() -> some View {
-        self.modifier(Headline())
-    }
-
-    func bodytext() -> some View {
-        self.modifier(Bodytext())
-    }
-
-    func callOut() -> some View {
-        self.modifier(CallOut())
-    }
-
-    func subhead() -> some View {
-        self.modifier(Subhead())
-    }
-    func footNote() -> some View {
-        self.modifier(Footnote())
-    }
-
-    func caption1() -> some View {
-        self.modifier(Caption1())
-    }
-
-    func caption2() -> some View {
-        self.modifier(Caption2())
-    }
-
-    func timeLarge() -> some View {
-        self.modifier(TimeLarge())
-    }
-    func timeSmall() -> some View {
-        self.modifier(TimeSmall())
-    }
-}
