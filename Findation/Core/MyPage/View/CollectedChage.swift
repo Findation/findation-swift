@@ -1,6 +1,8 @@
 import SwiftUI
 
+
 // MARK: - 모델 (백엔드 사진 예시)
+
 struct BackendPhoto: Identifiable, Hashable {
     let id = UUID()
     let date: Date
@@ -11,6 +13,7 @@ struct CollectedChangeView: View {
     // MARK: - 상태
     @State private var currentDate: Date = Date()
     @State private var selectedDate: Date? = nil
+
     @State private var showSheet: Bool = false
 
     @State private var photosByDay: [Date: [BackendPhoto]] = [:]
@@ -21,6 +24,7 @@ struct CollectedChangeView: View {
     @State private var activityDoneDays: Set<Date> = []
 
     // MARK: - 상수/유틸
+
     private let calendar = Calendar.current
     private let weekdays = ["월", "화", "수", "목", "금", "토", "일"]
     private let columns = Array(repeating: GridItem(.fixed(40), spacing: 7), count: 7)
@@ -38,12 +42,14 @@ struct CollectedChangeView: View {
         static func firstWeekdayOffset(for date: Date, calendar: Calendar = .current) -> Int {
             let comps = calendar.dateComponents([.year, .month], from: date)
             guard let firstOfMonth = calendar.date(from: comps) else { return 0 }
+
             let weekday = calendar.component(.weekday, from: firstOfMonth) // 1:일~7:토
             return (weekday + 5) % 7 // 월(2)을 0으로 보정해서 월=0 시작
         }
     }
 
     // MARK: - 달력 보조
+
     private func changeMonth(by value: Int) {
         if let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) {
             currentDate = newDate
@@ -64,6 +70,7 @@ struct CollectedChangeView: View {
         guard let d = dateFor(day: day) else { return false }
         return calendar.compare(d, to: Date(), toGranularity: .day) == .orderedAscending
     }
+
     private func dayKey(for day: Int) -> Date? {
         guard let d = dateFor(day: day) else { return nil }
         return calendar.startOfDay(for: d)
@@ -89,10 +96,12 @@ struct CollectedChangeView: View {
 
         var grouped: [Date: [BackendPhoto]] = [:]
         for p in demoPhotos {
+
             let key = calendar.startOfDay(for: p.date)
             grouped[key, default: []].append(p)
         }
         photosByDay = grouped
+
 
         // ✅ “활동만 하고 사진은 없는” 날(예시) → 파랑 원으로 표시됨
         activityDoneDays = [
@@ -101,6 +110,7 @@ struct CollectedChangeView: View {
     }
 
     // MARK: - View
+
     var body: some View {
         let offset = CalendarHelper.firstWeekdayOffset(for: currentDate)
         let days = CalendarHelper.daysInMonth(for: currentDate)
@@ -110,7 +120,9 @@ struct CollectedChangeView: View {
         ZStack {
             VStack(spacing: 0) {
                 VStack(spacing: 0 ) {
+
                     // 헤더 (기존 UI 유지)
+
                     HStack {
                         Button { changeMonth(by: -1) } label: {
                             Image(systemName: "arrowtriangle.left.fill")
@@ -125,7 +137,9 @@ struct CollectedChangeView: View {
                                 .foregroundStyle(Color("Primary"))
                         }
                         Spacer()
+
                         Button { TodayDate() } label : {
+
                             Text("오늘")
                                 .caption1()
                                 .foregroundColor(Color("Primary"))
@@ -133,6 +147,7 @@ struct CollectedChangeView: View {
                                 .background(Color("Secondary"))
                                 .cornerRadius(11)
                         }
+
                     }
                     .padding(.trailing, 16)
                     .padding(.bottom, 16)
@@ -218,8 +233,12 @@ struct CollectedChangeView: View {
                                     }
                                 }
                             }
+
                         }
+                        .padding(.top, 12)
+                        .padding(.trailing, 12)
                     }
+
                     .padding(.bottom, 43)
 
                     Spacer(minLength: 0)
@@ -243,9 +262,25 @@ struct CollectedChangeView: View {
                 showSheet = false
             }
             .presentationDetents([.height(420), .medium])
+
         }
+        .padding(.horizontal, 16)
+        .frame(maxWidth: 520)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 12)
+        .gesture(
+            DragGesture(minimumDistance: 15)
+                .onEnded { value in
+                    if value.translation.width < -40, currentIndex < photos.count - 1 {
+                        withAnimation(.easeInOut(duration: 0.18)) { currentIndex += 1 }
+                    } else if value.translation.width > 40, currentIndex > 0 {
+                        withAnimation(.easeInOut(duration: 0.18)) { currentIndex -= 1 }
+                    }
+                }
+        )
     }
 }
+
 
 // MARK: - 사진 시트
 fileprivate struct PhotoSheetView: View {
@@ -310,6 +345,7 @@ fileprivate struct PhotoSheetView: View {
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
                 .padding(.horizontal)
             }
+
 
             Button("닫기") { onClose() }
                 .padding(.top, 4)

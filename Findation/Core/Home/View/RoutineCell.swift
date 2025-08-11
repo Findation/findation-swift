@@ -31,7 +31,7 @@ class RoutineCell: UITableViewCell {
 
     func configure(with routine: Routine) {
         titleLabel.text = routine.title
-        categoryLabel.text = routine.category
+        categoryLabel.text = "#\(routine.category)"
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
@@ -60,18 +60,14 @@ class RoutineCell: UITableViewCell {
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         categoryLabel.font = captionFont
-        categoryLabel.textColor = .primary
-        categoryLabel.backgroundColor = .white
-        categoryLabel.layer.borderColor = primaryColor.cgColor
-        categoryLabel.layer.borderWidth = 1
-        categoryLabel.layer.cornerRadius = 999
-        categoryLabel.clipsToBounds = true
-        categoryLabel.topInset = 4
-        categoryLabel.bottomInset = 4
-        categoryLabel.leftInset = 6
-        categoryLabel.rightInset = 6
+        categoryLabel.textColor = primaryColor
+        categoryLabel.numberOfLines = 1
+        categoryLabel.lineBreakMode = .byTruncatingTail
         categoryLabel.setContentHuggingPriority(.required, for: .horizontal)
         categoryLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        categoryLabel.layer.borderWidth = 1
+        categoryLabel.layer.borderColor = primaryColor.cgColor
+        categoryLabel.clipsToBounds = true
 
         timeLabel.font = subheadFont
         timeLabel.textColor = darkGrayColor
@@ -100,9 +96,13 @@ class RoutineCell: UITableViewCell {
             strikeThroughView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
+        
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         // 메인 수평 스택 (제목 + 태그 + 시간)
-        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, timeLabel])
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, spacer, timeLabel])
         mainStack.axis = .horizontal
         mainStack.spacing = 10
         mainStack.alignment = .center

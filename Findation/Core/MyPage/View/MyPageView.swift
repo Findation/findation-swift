@@ -97,7 +97,9 @@ struct MyPageScreen: View {
                         }
 
                         VStack {
+
                             Spacer()
+
                         }
                     }
 

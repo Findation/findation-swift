@@ -46,6 +46,7 @@ struct RegisterView: View {
                         } catch {
                             showPopup = true
                             print("SignUp failed:", error)
+                            shouldNavigateToNextScreen = false
                         }
                     }
                     .padding(.bottom, 12)
