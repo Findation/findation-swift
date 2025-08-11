@@ -41,3 +41,7 @@ struct FriendAddView: View {
         .navigationBarBackButtonHidden(false)               // ✅ ← 시스템 back 버튼 표시
     }
 }
+
+#Preview {
+    FriendAddView()
+}
