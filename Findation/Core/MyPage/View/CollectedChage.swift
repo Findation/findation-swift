@@ -229,29 +229,21 @@ fileprivate struct PopupPhotoViewer: View {
     var body: some View {
         VStack(spacing: 0) {
             GeometryReader { geo in
-                let imgView: some View = Group {
-                    if let current = photos[safe: currentIndex] {
-                        AsyncImage(url: current.imageURL) { phase in
-                            switch phase {
-                            case .success(let img):
-                                img.resizable().scaledToFill()
-                                    .frame(width: geo.size.width, height: 360)
-                                    .clipped()
-                            case .failure(_):
-                                Color.gray.opacity(0.15)
-                            case .empty:
-                                ZStack { Color.gray.opacity(0.08); ProgressView() }
-                            @unknown default:
-                                Color.gray.opacity(0.15)
-                            }
-                        }
-                    } else {
+                if photos.isEmpty {
+                    // 사진이 없는 경우
+                    ZStack {
                         Color.gray.opacity(0.1)
-                    }
-                }
+                            .frame(width: geo.size.width, height: 360)
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                imgView
-                    .overlay(Rectangle().fill(.black.opacity(0.35)))
+                        Text("오늘은 저장된 사진이 없습니다.")
+                            .font(.body.weight(.medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Capsule())
+                    }
                     .overlay(alignment: .topTrailing) {
                         Button(action: onClose) {
                             Image(systemName: "xmark")
@@ -275,58 +267,109 @@ fileprivate struct PopupPhotoViewer: View {
                             .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 2)
                             .padding(.top, 12)
                     }
-                    .overlay {
-                        HStack {
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.18)) {
-                                    currentIndex = max(0, currentIndex - 1)
+                } else {
+                    // 사진이 있는 경우
+                    let imgView: some View = Group {
+                        if let current = photos[safe: currentIndex] {
+                            AsyncImage(url: current.imageURL) { phase in
+                                switch phase {
+                                case .success(let img):
+                                    img.resizable().scaledToFill()
+                                        .frame(width: geo.size.width, height: 360)
+                                        .clipped()
+                                case .failure(_):
+                                    Color.gray.opacity(0.15)
+                                case .empty:
+                                    ZStack { Color.gray.opacity(0.08); ProgressView() }
+                                @unknown default:
+                                    Color.gray.opacity(0.15)
                                 }
-                            } label: {
-                                Image(systemName: "chevron.left")
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(.white)
-                                    .padding(8)
-                                    .background(.black.opacity(0.35))
-                                    .clipShape(Circle())
                             }
-                            .disabled(currentIndex == 0)
-                            .opacity(currentIndex == 0 ? 0.5 : 1)
-
-                            Spacer()
-
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.18)) {
-                                    currentIndex = min(photos.count - 1, currentIndex + 1)
-                                }
-                            } label: {
-                                Image(systemName: "chevron.right")
-                                    .font(.title3.weight(.semibold))
-                                    .foregroundStyle(.white)
-                                    .padding(8)
-                                    .background(.black.opacity(0.35))
-                                    .clipShape(Circle())
-                            }
-                            .disabled(currentIndex >= max(photos.count - 1, 0))
-                            .opacity(currentIndex >= max(photos.count - 1, 0) ? 0.5 : 1)
+                        } else {
+                            Color.gray.opacity(0.1)
                         }
-                        .padding(.horizontal, 12)
                     }
-                    .frame(width: geo.size.width, height: 360)
-            }
-            .frame(height: 360)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-            HStack(spacing: 6) {
-                ForEach(0..<(max(photos.count, 1)), id: \.self) { i in
-                    Circle()
-                        .frame(width: i == currentIndex ? 8 : 6, height: i == currentIndex ? 8 : 6)
-                        .foregroundStyle(i == currentIndex ? .white : .white.opacity(0.5))
+                    imgView
+                        .overlay(Rectangle().fill(.black.opacity(0.35)))
+                        .overlay(alignment: .topTrailing) {
+                            Button(action: onClose) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(8)
+                                    .background(Color.black.opacity(0.35))
+                                    .clipShape(Circle())
+                            }
+                            .padding(.top, 12)
+                            .padding(.trailing, 12)
+                        }
+                        .overlay(alignment: .top) {
+                            Text(pillFormatter.string(from: date))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(Color("Primary"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(.white)
+                                .clipShape(Capsule())
+                                .shadow(color: .black.opacity(0.25), radius: 6, x: 0, y: 2)
+                                .padding(.top, 12)
+                        }
+                        .overlay {
+                            HStack {
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.18)) {
+                                        currentIndex = max(0, currentIndex - 1)
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.left")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(.white)
+                                        .padding(8)
+                                        .background(.black.opacity(0.35))
+                                        .clipShape(Circle())
+                                }
+                                .disabled(currentIndex == 0)
+                                .opacity(currentIndex == 0 ? 0.5 : 1)
+
+                                Spacer()
+
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.18)) {
+                                        currentIndex = min(photos.count - 1, currentIndex + 1)
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.right")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(.white)
+                                        .padding(8)
+                                        .background(.black.opacity(0.35))
+                                        .clipShape(Circle())
+                                }
+                                .disabled(currentIndex >= max(photos.count - 1, 0))
+                                .opacity(currentIndex >= max(photos.count - 1, 0) ? 0.5 : 1)
+                            }
+                            .padding(.horizontal, 12)
+                        }
+                        .frame(width: geo.size.width, height: 360)
                 }
             }
-            .padding(.top, 10)
+            .frame(height: 360)
+
+            if !photos.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(0..<(max(photos.count, 1)), id: \.self) { i in
+                        Circle()
+                            .frame(width: i == currentIndex ? 8 : 6, height: i == currentIndex ? 8 : 6)
+                            .foregroundStyle(i == currentIndex ? .white : .white.opacity(0.5))
+                    }
+                }
+                .padding(.top, 10)
+            }
         }
         .padding(.horizontal, 16)
         .frame(maxWidth: 520)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 12)
         .gesture(
             DragGesture(minimumDistance: 15)
