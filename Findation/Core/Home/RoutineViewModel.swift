@@ -61,16 +61,6 @@ final class RoutinesViewModel: ObservableObject {
         }
     }
 
-    @MainActor
-    func unmarkCompleted(_ id: String) {
-        completedToday.remove(id)
-        saveCompletedToday()
-
-        if let idx = routines.firstIndex(where: { $0.id == id }) {
-            routines[idx].isCompleted = false
-        }
-    }
-
     // MARK: - Private helpers
     private func mergeWithCompletedToday(_ list: [Routine]) -> [Routine] {
         list.map { r in
