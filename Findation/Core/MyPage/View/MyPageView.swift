@@ -56,7 +56,7 @@ struct MyPageScreen: View {
                         }
 
                         VStack {
-                            CollectView()
+                            CollectedChangeView()
                             FocusRecoveryView()
                         }
                         .padding(.top, 530)
