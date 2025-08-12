@@ -55,9 +55,17 @@ struct MainView: View {
         NavigationStack {
             ZStack(alignment: .top) {
                 Color("Secondary").ignoresSafeArea()
-
-                // ── 메인 컨텐츠
-                Group {
+             Group {   
+                if vm.isLoading {
+                    ProgressView()
+                } else {
+                    ScrollViewReader { scrollProxy in
+                        ScrollView(showsIndicators: false) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                VStack(spacing:0) {
+                                    HeaderSection(date: currentDate, nickname: nickname, showAddTask: $showAddTask)
+                                        .padding(.horizontal)
+                                        .padding(.bottom, 16)
                     if vm.isLoading {
                         ProgressView()
                     } else {
@@ -117,6 +125,8 @@ struct MainView: View {
                                         .padding(.horizontal, 16)
                                         .padding(.bottom, 20)
                                     }
+                                    .padding(.leading, 16)
+                                    .padding(.bottom, 16)
                                     .background(Color.white)
                                     .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
                                     .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)

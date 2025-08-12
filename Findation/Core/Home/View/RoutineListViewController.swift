@@ -12,13 +12,14 @@ class RoutineListViewController: UITableViewController {
         super.viewDidLoad()
         tableView.register(RoutineCell.self, forCellReuseIdentifier: "RoutineCell")
         tableView.rowHeight = 54
-        tableView.separatorStyle = .singleLine
+        // tableView.separatorStyle = .singleLine
+        tableView.separatorColor = .clear // 디바이더 제거
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         routines.count
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let routine = routines[indexPath.row]
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "RoutineCell", for: indexPath) as? RoutineCell else {
@@ -32,6 +33,28 @@ class RoutineListViewController: UITableViewController {
         cell.onComplete = { [weak self] in self?.onComplete?(routine) }
 
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        tableView.separatorStyle = .none
+        // 중복 방지
+        cell.contentView.subviews.filter { $0.tag == 999 }.forEach { $0.removeFromSuperview() }
+
+        // 마지막 셀은 스킵
+        guard indexPath.row < routines.count - 1 else { return }
+
+        let divider = UIView()
+        divider.tag = 999
+        divider.backgroundColor = .white
+        divider.translatesAutoresizingMaskIntoConstraints = false
+        cell.contentView.addSubview(divider)
+
+        NSLayoutConstraint.activate([
+            divider.heightAnchor.constraint(equalToConstant: 6),
+            divider.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
+            divider.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor),
+            divider.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)
+        ])
     }
 
     override func tableView(_ tableView: UITableView,

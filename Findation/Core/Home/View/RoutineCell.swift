@@ -1,7 +1,11 @@
 import UIKit
 
 class RoutineCell: UITableViewCell {
+    private var fillAnimator: UIViewPropertyAnimator?
+    private var strikeCenterY: NSLayoutConstraint?
 
+    private let dividerReservedHeight: CGFloat = 6
+    
     var onLongPress: (() -> Void)?
     var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
@@ -11,6 +15,7 @@ class RoutineCell: UITableViewCell {
     private let categoryLabel = PaddingLabel()
     private let timeLabel = UILabel()
     private let progressView = UIView()
+    private let bgView = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
 
     private let strikeThroughView = UIView()
@@ -41,6 +46,7 @@ class RoutineCell: UITableViewCell {
 
     private func setupUI() {
         backgroundColor = .white
+        contentView.backgroundColor = .clear
         selectionStyle = .none
 
         let bodyFont = UIFont.systemFont(ofSize: 16)
@@ -50,6 +56,7 @@ class RoutineCell: UITableViewCell {
         let blackColor = UIColor(named: "Black") ?? .black
         let darkGrayColor = UIColor(named: "DarkGray") ?? .darkGray
         let primaryColor = UIColor(named: "Primary") ?? .systemBlue
+        let cellBgColor = UIColor(named: "Secondary") ?? UIColor(white: 0.97, alpha: 1)
         let mediumGrayColor = UIColor(named: "MediumGray") ?? .lightGray
 
         titleLabel.font = bodyFont
@@ -65,6 +72,9 @@ class RoutineCell: UITableViewCell {
         categoryLabel.lineBreakMode = .byTruncatingTail
         categoryLabel.setContentHuggingPriority(.required, for: .horizontal)
         categoryLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        categoryLabel.backgroundColor = .white
+        categoryLabel.layer.cornerRadius = 6
+        categoryLabel.layer.masksToBounds = true
         categoryLabel.layer.borderWidth = 1
         categoryLabel.layer.borderColor = primaryColor.cgColor
         categoryLabel.clipsToBounds = true
@@ -74,28 +84,48 @@ class RoutineCell: UITableViewCell {
         timeLabel.setContentHuggingPriority(.required, for: .horizontal)
         timeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
+        // 1) 배경 뷰 먼저 추가 (가장 아래)
+        bgView.backgroundColor = cellBgColor
+        bgView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(bgView)
+        NSLayoutConstraint.activate([
+            bgView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            bgView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            bgView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,
+                                           constant: -dividerReservedHeight),
+            bgView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+        ])
+        bgView.layer.cornerRadius = 26
+        bgView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner]
+        bgView.layer.masksToBounds = true
+        
         // 배경 진행 바
         progressView.backgroundColor = primaryColor
         progressView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(progressView)
+        
+        bgView.addSubview(progressView)                // ← bgView 안으로
+
+        progressView.backgroundColor = primaryColor.withAlphaComponent(0.2)
+        progressView.translatesAutoresizingMaskIntoConstraints = false
         progressWidthConstraint = progressView.widthAnchor.constraint(equalToConstant: 0)
+
         NSLayoutConstraint.activate([
-            progressView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            progressView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            progressView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            progressView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor),
+            progressView.topAnchor.constraint(equalTo: bgView.topAnchor),
+            progressView.bottomAnchor.constraint(equalTo: bgView.bottomAnchor),
             progressWidthConstraint!
         ])
+
+        // 왼쪽만 둥글게
+        progressView.layer.cornerRadius = bgView.layer.cornerRadius   // 27과 동일
+        progressView.layer.masksToBounds = true
+        progressView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner]
 
         strikeThroughView.backgroundColor = mediumGrayColor
         strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
         strikeThroughView.isHidden = true
-        contentView.addSubview(strikeThroughView)
-        NSLayoutConstraint.activate([
-            strikeThroughView.heightAnchor.constraint(equalToConstant: 2),
-            strikeThroughView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            strikeThroughView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
+        strikeThroughView.isUserInteractionEnabled = false
+        
         
         let spacer = UIView()
         spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -111,16 +141,30 @@ class RoutineCell: UITableViewCell {
         contentView.addSubview(mainStack)
         mainStack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            mainStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            mainStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
+            mainStack.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: 16),
+            mainStack.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -16),
+            mainStack.centerYAnchor.constraint(equalTo: bgView.centerYAnchor),
+            mainStack.topAnchor.constraint(greaterThanOrEqualTo: bgView.topAnchor, constant: 8),
+            mainStack.bottomAnchor.constraint(lessThanOrEqualTo: bgView.bottomAnchor, constant: -8)
+        ])
+        
+        contentView.addSubview(strikeThroughView)
+        
+        strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
+
+        strikeCenterY = strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -dividerReservedHeight/2)
+        NSLayoutConstraint.activate([
+            strikeThroughView.heightAnchor.constraint(equalToConstant: 2),
+            strikeThroughView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            strikeThroughView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            strikeCenterY!
         ])
     }
 
     private func setupGesture() {
         longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
         longPressRecognizer.minimumPressDuration = 0.05
+        longPressRecognizer.cancelsTouchesInView = true
         contentView.addGestureRecognizer(longPressRecognizer)
     }
 
@@ -130,42 +174,77 @@ class RoutineCell: UITableViewCell {
 
         switch gesture.state {
         case .began:
+            // 혹시 남아있을 수 있는 애니/타이머 정리
             longPressTimer?.invalidate()
+            longPressTimer = nil
+            fillAnimator?.stopAnimation(true)
             progressView.layer.removeAllAnimations()
+            contentView.layer.removeAllAnimations()
 
+            // 0에서 시작
             progressWidth.constant = 0
             contentView.layoutIfNeeded()
 
-            progressWidth.constant = contentView.frame.width
-            UIView.animate(withDuration: 1.5) {
+            // 목표폭 = bgView(혹은 contentView) 너비
+            let targetWidth = bgView.bounds.width  // bgView가 아니라면 contentView.bounds.width 써도 됨
+            progressWidth.constant = targetWidth
+
+            // 1.5초 채우기 애니메이터
+            let animator = UIViewPropertyAnimator(duration: 1.5, curve: .linear) {
                 self.contentView.layoutIfNeeded()
             }
+            self.fillAnimator = animator
+            animator.startAnimation()
+
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
+            // 타이머로 완료 콜백
             longPressTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
                 guard let self = self else { return }
+                // 애니 중지 + 바로 0으로 리셋
+                self.fillAnimator?.stopAnimation(true)
                 self.progressWidthConstraint?.constant = 0
                 UIView.animate(withDuration: 0.2) {
                     self.contentView.layoutIfNeeded()
                 }
-
-                self.longPressTimer?.invalidate()
                 self.longPressTimer = nil
                 self.onLongPress?()
             }
 
         case .ended, .cancelled, .failed:
+            // 완료 전에 손 떼면: 현재 위치에서 0으로 부드럽게
             longPressTimer?.invalidate()
             longPressTimer = nil
-            progressView.layer.removeAllAnimations()
+
+            // 진행 중 애니 즉시 중단
+            fillAnimator?.stopAnimation(true)
+
+            // 현재 width 스냅샷(프레젠테이션 레이어에서)
+            let currentWidth = self.progressView.layer.presentation()?.bounds.width ?? self.progressView.bounds.width
+
+            // 제약을 현재값으로 고정 후 0으로 애니
+            progressWidth.constant = currentWidth
+            self.contentView.layoutIfNeeded() // 상태 고정
+
             progressWidth.constant = 0
-            UIView.animate(withDuration: 0.2) {
+            UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
                 self.contentView.layoutIfNeeded()
             }
 
         default:
             break
         }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        longPressTimer?.invalidate()
+        longPressTimer = nil
+        fillAnimator?.stopAnimation(true)
+        progressView.layer.removeAllAnimations()
+        contentView.layer.removeAllAnimations()
+        progressWidthConstraint?.constant = 0
+        contentView.layoutIfNeeded()
     }
 
     private func formatTime(_ time: TimeInterval) -> String {
