@@ -64,6 +64,7 @@ struct MainView: View {
                                 VStack(spacing:0) {
                                     HeaderSection(date: currentDate, nickname: nickname, showAddTask: $showAddTask)
                                         .padding(.horizontal)
+                                        .padding(.bottom, 16)
                                     VStack(spacing: 0) {
                                         UIKitRoutineListView(
                                             routines: todaysBinding,

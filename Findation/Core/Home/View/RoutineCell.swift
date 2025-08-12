@@ -2,6 +2,8 @@ import UIKit
 
 class RoutineCell: UITableViewCell {
     private var fillAnimator: UIViewPropertyAnimator?
+    private var strikeCenterY: NSLayoutConstraint?
+
     private let dividerReservedHeight: CGFloat = 6
     
     var onLongPress: (() -> Void)?
@@ -124,13 +126,6 @@ class RoutineCell: UITableViewCell {
         strikeThroughView.isHidden = true
         strikeThroughView.isUserInteractionEnabled = false
         
-        contentView.addSubview(strikeThroughView)
-        NSLayoutConstraint.activate([
-            strikeThroughView.heightAnchor.constraint(equalToConstant: 2),
-            strikeThroughView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            strikeThroughView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
         
         let spacer = UIView()
         spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -151,6 +146,18 @@ class RoutineCell: UITableViewCell {
             mainStack.centerYAnchor.constraint(equalTo: bgView.centerYAnchor),
             mainStack.topAnchor.constraint(greaterThanOrEqualTo: bgView.topAnchor, constant: 8),
             mainStack.bottomAnchor.constraint(lessThanOrEqualTo: bgView.bottomAnchor, constant: -8)
+        ])
+        
+        contentView.addSubview(strikeThroughView)
+        
+        strikeThroughView.translatesAutoresizingMaskIntoConstraints = false
+
+        strikeCenterY = strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -dividerReservedHeight/2)
+        NSLayoutConstraint.activate([
+            strikeThroughView.heightAnchor.constraint(equalToConstant: 2),
+            strikeThroughView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            strikeThroughView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            strikeCenterY!
         ])
     }
 
