@@ -6,22 +6,23 @@ struct MainView: View {
     @StateObject private var vm = RoutinesViewModel()
     
     @State private var showAllRoutines = false
-    // 바인딩 필요 시:
-    private var routinesBinding: Binding<[Routine]> {
-        Binding(get: { vm.routines }, set: { vm.routines = $0 })
-    }
+
     private var todaysRoutines: [Routine] {
-        vm.routines.filter { $0.matches(date: currentDate) }
+        vm.routines.filter { $0.matches(date: currentDate) || $0.isNotRepeated() }
     }
     private var visibleRoutines: [Routine] {
-        showAllRoutines ? todaysRoutines : Array(todaysRoutines.prefix(5))
+        let sorted = todaysRoutines.sorted {
+            ($0.isCompleted ? 1 : 0) < ($1.isCompleted ? 1 : 0)
+        }
+        return showAllRoutines ? sorted : Array(sorted.prefix(5))
     }
     private var todaysBinding: Binding<[Routine]> {
         Binding(
-            get:{visibleRoutines },
-            set: { _ in /* no-op: 개별 액션(onEdit/onDelete 등)에서 원본 vm.routines를 갱신하므로 여기선 불필요 */ }
+            get:{ visibleRoutines },
+            set: { _ in }
         )
     }
+    
     let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
     
     @State private var currentDate = Date()
@@ -77,15 +78,6 @@ struct MainView: View {
                                             onDelete: { routine in
                                                 routineToDelete = routine
                                                 showDeleteConfirmation = true
-                                                RoutineAPI.deleteRoutine(id: routine.id) { success in
-                                                    if success {
-                                                        if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
-                                                            vm.routines.remove(at: index)
-                                                        }
-                                                    } else {
-                                                        // 루틴 삭제 실패 로직
-                                                    }
-                                                }
                                             },
                                             onComplete: { routine in
                                                 Task {
@@ -122,7 +114,7 @@ struct MainView: View {
                                         }
                                     }
                                     .padding(.horizontal, 16)
-                                    .padding(.bottom, 20)
+                                    .padding(.bottom, 40)
                                 }
                                 .background(Color.white)
                                 .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
@@ -150,7 +142,24 @@ struct MainView: View {
                     CompletionConfirmationView(
                         routineTitle: routine.title,
                         elapsedTime: elapsedSnapshot,
-                        onComplete: { /* 완료 처리 */ },
+                        onComplete: {
+                            Task {
+                                let usedSeconds = Int(elapsedSnapshot.rounded())
+                                
+                                UsedTimeAPI.postUsedTime(usedTime: usedSeconds, satisfaction: 5, image: nil) { result in
+                                switch result {
+                                    case .success:
+                                        print("성공")
+                                    case .failure(let error):
+                                        print("실패 \(error)")
+                                    }
+                                }
+                                await MainActor.run {
+                                    vm.markCompleted(routine.id)
+                                    showCompletionModal = false
+                                }
+                            }
+                        },
                         onPhotoProof: {
                             showCamera = true
                             showCompletionModal = false
@@ -206,6 +215,7 @@ struct MainView: View {
                             .task(id: session.isAuthenticated) {
                                 guard session.isAuthenticated else { return }
                                 await vm.load()
+                                print(KeychainHelper.load(forKey: "accessToken") ?? "어푸")
                             }
                             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                                 Task { await vm.load() }
@@ -222,7 +232,6 @@ struct MainView: View {
                                 Task { await vm.load() }
                             }) {
                                 AddTaskView(
-                                    routines: routinesBinding,
                                     routineToEdit: $editTargetRoutine
                                 )
                                     .id(editTargetRoutine?.id)
@@ -233,7 +242,14 @@ struct MainView: View {
                                     message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
                                     primaryButton: .destructive(Text("삭제")) {
                                         if let routine = routineToDelete {
-                                            vm.routines.removeAll { $0.id == routine.id }
+                                            RoutineAPI.deleteRoutine(id: routine.id) { success in
+                                                if success {
+                                                    if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+                                                        vm.routines.remove(at: index)
+                                                    }
+                                                } else {
+                                                }
+                                            }
                                             routineToDelete = nil
                                         }
                                     },
@@ -292,7 +308,7 @@ struct MainView: View {
                     }
 
                     VStack(spacing: 4) {
-                        Text("\(nickname)님")
+                        Text("\(nickname)님,")
                         Text("오늘도 힘내요!")
                     }
                     .title1()

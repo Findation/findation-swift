@@ -113,24 +113,3 @@ enum RoutineAPI {
         }
     }
 }
-
-// completion 사용예제
-//func login(email: String, password: String, completion: @escaping (Bool) -> Void) {
-//    // 서버에 로그인 요청 보냄
-//    DispatchQueue.global().async {
-//        let success = (email == "test" && password == "1234")
-//        
-//        // 결과 전달
-//        DispatchQueue.main.async {
-//            completion(success)
-//        }
-//    }
-//}
-//
-//login(email: "test", password: "1234") { isSuccess in
-//    if isSuccess {
-//        print("로그인 성공!")
-//    } else {
-//        print("로그인 실패!")
-//    }
-//}

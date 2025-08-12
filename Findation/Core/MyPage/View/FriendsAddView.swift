@@ -182,3 +182,7 @@ struct FriendAddView: View {
         FriendAddView()
     }
 }
+
+#Preview {
+    FriendAddView()
+}

@@ -26,4 +26,8 @@ extension Routine {
     func matches(date: Date, calendar: Calendar = .current) -> Bool {
         return isScheduledOnDate(bitmask: isRepeatedBitmask, date: date, calendar: calendar)
     }
+    
+    func isNotRepeated() -> Bool {
+        return isRepeatedBitmask == 0
+    }
 }

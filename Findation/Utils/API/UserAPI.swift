@@ -33,7 +33,6 @@ enum UserAPI {
         let params = ["nickname": nickname]
         let headers: HTTPHeaders = ["Authorization": "Bearer \(accessToken)"]
 
-        // GET은 보통 query string → URLEncoding
         return try await AF.request(API.User.searchUser,
                                     method: .get,
                                     parameters: params,
@@ -45,7 +44,6 @@ enum UserAPI {
     }
 
     static func refreshAccessToken(refreshToken: String) async throws -> RefreshResponse {
-        // DRF SimpleJWT는 기본적으로 키가 "refresh"
         let params = ["refresh": refreshToken]
         let headers: HTTPHeaders = ["Accept": "application/json", "Content-Type": "application/json"]
 

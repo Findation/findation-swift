@@ -60,18 +60,14 @@ class RoutineCell: UITableViewCell {
         titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         categoryLabel.font = captionFont
-        categoryLabel.textColor = .primary
-        categoryLabel.backgroundColor = .white
-        categoryLabel.layer.borderColor = primaryColor.cgColor
-        categoryLabel.layer.borderWidth = 1
-        categoryLabel.layer.cornerRadius = 999
-        categoryLabel.clipsToBounds = true
-        categoryLabel.topInset = 4
-        categoryLabel.bottomInset = 4
-        categoryLabel.leftInset = 6
-        categoryLabel.rightInset = 6
+        categoryLabel.textColor = primaryColor
+        categoryLabel.numberOfLines = 1
+        categoryLabel.lineBreakMode = .byTruncatingTail
         categoryLabel.setContentHuggingPriority(.required, for: .horizontal)
         categoryLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        categoryLabel.layer.borderWidth = 1
+        categoryLabel.layer.borderColor = primaryColor.cgColor
+        categoryLabel.clipsToBounds = true
 
         timeLabel.font = subheadFont
         timeLabel.textColor = darkGrayColor
@@ -100,9 +96,13 @@ class RoutineCell: UITableViewCell {
             strikeThroughView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             strikeThroughView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
+        
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         // 메인 수평 스택 (제목 + 태그 + 시간)
-        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, timeLabel])
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, spacer])
         mainStack.axis = .horizontal
         mainStack.spacing = 10
         mainStack.alignment = .center
@@ -130,19 +130,34 @@ class RoutineCell: UITableViewCell {
 
         switch gesture.state {
         case .began:
+            longPressTimer?.invalidate()
+            progressView.layer.removeAllAnimations()
+
+            progressWidth.constant = 0
+            contentView.layoutIfNeeded()
+
             progressWidth.constant = contentView.frame.width
             UIView.animate(withDuration: 1.5) {
                 self.contentView.layoutIfNeeded()
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
-            longPressTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+            longPressTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                self.progressWidthConstraint?.constant = 0
+                UIView.animate(withDuration: 0.2) {
+                    self.contentView.layoutIfNeeded()
+                }
+
+                self.longPressTimer?.invalidate()
+                self.longPressTimer = nil
                 self.onLongPress?()
             }
 
         case .ended, .cancelled, .failed:
             longPressTimer?.invalidate()
             longPressTimer = nil
+            progressView.layer.removeAllAnimations()
             progressWidth.constant = 0
             UIView.animate(withDuration: 0.2) {
                 self.contentView.layoutIfNeeded()

@@ -43,6 +43,7 @@ struct AuthView: View {
 
                         do {
                             let auth = try await UserAPI.signIn(email: email, password: password)
+                            print(auth)
                             session.login(accessToken: auth.access,
                                           refreshToken: auth.refresh,
                                           nickname: auth.user.nickname)
