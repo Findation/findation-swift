@@ -73,7 +73,6 @@ struct FocusRecoveryView: View {
         .frame(minWidth: 353, maxWidth: 353, minHeight: 336, alignment: .topLeading)
         .background(Color.white)
         .cornerRadius(10)
-        .shadow(radius: 10)
     }
 }
 
