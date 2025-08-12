@@ -231,7 +231,6 @@ struct CollectedChangeView: View {
                             Color.clear.frame(width: dot, height: dot)
                         } else {
                             let day = index - offset + 1
-                            let past = isPast(day: day)
                             let selectable = isPastOrToday(day: day)
                             let todayFlag = isToday(day: day)
                             let key = dayKey(for: day)
@@ -307,7 +306,7 @@ struct CollectedChangeView: View {
         .frame(width: 353, height: numRows == 6 ? 390 : 350, alignment: .top)
         .background(Color.white)
         .cornerRadius(10)
-        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 8)
+        .shadow(radius: 10)
         
         // 달 바뀔 때마다 자동 패칭
         .task(id: monthKey) {

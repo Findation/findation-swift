@@ -18,7 +18,7 @@ struct MainView: View {
     }
     private var todaysBinding: Binding<[Routine]> {
         Binding(
-            get:{visibleRoutines },
+            get:{ visibleRoutines },
             set: { _ in }
         )
     }
@@ -78,15 +78,6 @@ struct MainView: View {
                                             onDelete: { routine in
                                                 routineToDelete = routine
                                                 showDeleteConfirmation = true
-                                                RoutineAPI.deleteRoutine(id: routine.id) { success in
-                                                    if success {
-                                                        if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
-                                                            vm.routines.remove(at: index)
-                                                        }
-                                                    } else {
-                                                        // 루틴 삭제 실패 로직
-                                                    }
-                                                }
                                             },
                                             onComplete: { routine in
                                                 Task {
@@ -251,7 +242,14 @@ struct MainView: View {
                                     message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
                                     primaryButton: .destructive(Text("삭제")) {
                                         if let routine = routineToDelete {
-                                            vm.routines.removeAll { $0.id == routine.id }
+                                            RoutineAPI.deleteRoutine(id: routine.id) { success in
+                                                if success {
+                                                    if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+                                                        vm.routines.remove(at: index)
+                                                    }
+                                                } else {
+                                                }
+                                            }
                                             routineToDelete = nil
                                         }
                                     },
