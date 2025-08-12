@@ -7,18 +7,28 @@ struct BackendPhoto: Identifiable, Hashable {
     let imageURL: URL
 }
 
+struct DaySheetModel: Identifiable, Equatable {
+    let id = UUID()
+    let date: Date
+    let photos: [BackendPhoto]
+}
+
 struct CollectedChangeView: View {
     // MARK: State
     @State private var currentDate: Date = Date()
     @State private var selectedDate: Date? = nil
-    @State private var showSheet: Bool = false
+    @State private var sheetModel: DaySheetModel? = nil
 
     @State private var photosByDay: [Date: [BackendPhoto]] = [:]
     @State private var selectedDayPhotos: [BackendPhoto] = []
     @State private var currentPhotoIndex: Int = 0
 
-    // 사진은 없지만 ‘활동은 한’ 날
+    // 사진은 없지만 ‘활동은 한’ 날(used_time > 0)
     @State private var activityDoneDays: Set<Date> = []
+
+    // 로딩/에러
+    @State private var isLoading = false
+    @State private var loadError: String?
 
     // MARK: Calendar Utils
     private let calendar = Calendar.current
@@ -42,6 +52,16 @@ struct CollectedChangeView: View {
         }
     }
 
+    // 서버와 날짜 포맷 맞추는 포매터 (YYYY-MM-DD)
+    private let backendDF: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
     // MARK: Helpers
     private func changeMonth(by value: Int) {
         if let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) {
@@ -63,6 +83,11 @@ struct CollectedChangeView: View {
         guard let d = dateFor(day: day) else { return false }
         return calendar.compare(d, to: Date(), toGranularity: .day) == .orderedAscending
     }
+    private func isPastOrToday(day: Int) -> Bool {
+        guard let d = dateFor(day: day) else { return false }
+        let cmp = calendar.compare(d, to: Date(), toGranularity: .day)
+        return cmp == .orderedAscending || cmp == .orderedSame
+    }
     private func dayKey(for day: Int) -> Date? {
         guard let d = dateFor(day: day) else { return nil }
         return calendar.startOfDay(for: d)
@@ -72,26 +97,64 @@ struct CollectedChangeView: View {
         return photosByDay[key]?.first
     }
 
-    // MARK: Demo Data
-    private func loadPhotosFromBackend() {
-        let today = Date()
-        let d1 = calendar.date(byAdding: .day, value: -1, to: today)! // 어제(사진 2장)
-        let d2 = calendar.date(byAdding: .day, value: -2, to: today)! // 그제(사진 1장)
-        let d3 = calendar.date(byAdding: .day, value: -3, to: today)! // 활동만 O
-
-        let demo: [BackendPhoto] = [
-            BackendPhoto(date: d1, imageURL: URL(string: "https://picsum.photos/seed/a/800/1200")!),
-            BackendPhoto(date: d1.addingTimeInterval(3600), imageURL: URL(string: "https://picsum.photos/seed/b/800/1200")!),
-            BackendPhoto(date: d2, imageURL: URL(string: "https://picsum.photos/seed/c/800/1200")!)
-        ]
-
-        var grouped: [Date: [BackendPhoto]] = [:]
-        for p in demo {
-            let key = calendar.startOfDay(for: p.date)
-            grouped[key, default: []].append(p)
+    // 해당 월의 1일~말일
+    private func monthRange(for date: Date) -> (start: Date, end: Date)? {
+        if let interval = calendar.dateInterval(of: .month, for: date) {
+            let end = calendar.date(byAdding: DateComponents(day: -1), to: interval.end)!
+            return (start: calendar.startOfDay(for: interval.start), end: calendar.startOfDay(for: end))
         }
-        photosByDay = grouped
-        activityDoneDays = [calendar.startOfDay(for: d3)]
+        return nil
+    }
+
+    // 달 변경 시 데이터 패칭
+    private func fetchMonth(date: Date) {
+        guard let (start, end) = monthRange(for: date) else { return }
+        isLoading = true
+        loadError = nil
+
+        Task {
+            do {
+                let items = try await UsedTimeAPI.getUsedTimeByStartEndData(startDate: start, endDate: end)
+
+                var grouped: [Date: [BackendPhoto]] = [:]
+                var activeDays = Set<Date>()
+
+                for item in items {
+                    let key = calendar.startOfDay(for: item.date)
+
+                    if !item.images.isEmpty {
+                        let photos = item.images.enumerated().map { idx, url in
+                            BackendPhoto(
+                                date: key.addingTimeInterval(TimeInterval(idx)),
+                                imageURL: url
+                            )
+                        }
+                        grouped[key, default: []].append(contentsOf: photos)
+                    }
+
+                    if item.usedTime > 0 {
+                        activeDays.insert(key)
+                    }
+                }
+
+                await MainActor.run {
+                    self.photosByDay = grouped
+                    self.activityDoneDays = activeDays
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.isLoading = false
+                    self.loadError = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    // 현재 보이는 달을 식별하는 키 (연-월)
+    private var monthKey: String {
+        let comps = calendar.dateComponents([.year, .month], from: currentDate)
+        return "\(comps.year ?? 0)-\(comps.month ?? 0)"
     }
 
     // MARK: View
@@ -100,7 +163,7 @@ struct CollectedChangeView: View {
         let days = CalendarHelper.daysInMonth(for: currentDate)
         let totalCells = offset + days
         let numRows = Int(ceil(Double(totalCells) / 7.0))
-
+        
         VStack(spacing: 0) {
             // 헤더
             HStack {
@@ -112,17 +175,17 @@ struct CollectedChangeView: View {
                     .font(.body)
                     .foregroundColor(.black)
                     .frame(minWidth: 60)
-
+                
                 Button { changeMonth(by: 1) } label: {
                     Image(systemName: "arrowtriangle.right.fill")
                         .foregroundStyle(Color("Primary"))
                 }
-
+                
                 Spacer()
-
+                
                 Button { TodayDate() } label: {
                     Text("오늘")
-                        .caption1()
+                        .font(.caption)
                         .foregroundColor(Color("Primary"))
                         .frame(width: 40, height: 22)
                         .background(Color("Secondary"))
@@ -132,14 +195,14 @@ struct CollectedChangeView: View {
             .padding(.horizontal, 16)
             .padding(.top, 17)
             .padding(.bottom, 12)
-
-            // 요일 & 날짜 (동적 dotSize로 겹침/잘림 방지)
+            
+            // 요일 & 날짜
             GeometryReader { geo in
                 let horizontalInset: CGFloat = 16
                 let spacing: CGFloat = 8
                 let innerWidth = geo.size.width - horizontalInset * 2
                 let dot = floor((innerWidth - spacing * 6) / 7) // 7열 + 6간격
-
+                
                 // 요일
                 LazyVGrid(
                     columns: Array(repeating: GridItem(.fixed(dot), spacing: spacing), count: 7),
@@ -149,14 +212,15 @@ struct CollectedChangeView: View {
                         Text(day)
                             .font(.caption)
                             .foregroundColor(.black)
-                            .frame(width: dot, height: 22) // 고정 높이로 겹침 방지
+                            .frame(width: dot, height: 22)
                     }
                 }
                 .padding(.horizontal, horizontalInset)
-
-                // 요일과 날짜 사이 여백
-                VStack { Spacer().frame(height: 6) }.frame(maxWidth: .infinity, maxHeight: .infinity)
-
+                
+                // 여백
+                VStack { Spacer().frame(height: 6) }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
                 // 날짜
                 LazyVGrid(
                     columns: Array(repeating: GridItem(.fixed(dot), spacing: spacing), count: 7),
@@ -168,13 +232,14 @@ struct CollectedChangeView: View {
                         } else {
                             let day = index - offset + 1
                             let past = isPast(day: day)
+                            let selectable = isPastOrToday(day: day)
                             let todayFlag = isToday(day: day)
                             let key = dayKey(for: day)
-
+                            
                             ZStack {
-                                if past {
+                                if selectable {
                                     if let first = firstPhoto(of: day) {
-                                        // 사진 인증 O → 썸네일
+                                        // 사진 O → 썸네일
                                         AsyncImage(url: first.imageURL) { phase in
                                             switch phase {
                                             case .success(let img):
@@ -182,19 +247,19 @@ struct CollectedChangeView: View {
                                                     .scaledToFill()
                                                     .frame(width: dot, height: dot)
                                                     .clipped()
-                                                    .opacity(0.3)
+                                                    .opacity(0.7)
                                             case .failure(_):
-                                                Color("Primary")
+                                                Color(Color.primaryColor)
                                             case .empty:
                                                 Color.gray.opacity(0.15)
                                             @unknown default:
-                                                Color("Primary")
+                                                Color(Color.primaryColor)
                                             }
                                         }
                                         .clipShape(Circle())
                                     } else if let k = key, activityDoneDays.contains(k) {
                                         // 활동 O & 사진 X → 파란색
-                                        Color("Primary")
+                                        Color(Color.primaryColor)
                                             .frame(width: dot, height: dot)
                                             .clipShape(Circle())
                                     } else {
@@ -209,8 +274,8 @@ struct CollectedChangeView: View {
                                         .frame(width: dot, height: dot)
                                         .clipShape(Circle())
                                 }
-
                                 Text("\(day)").foregroundColor(.white)
+                                // Text("\(day)").foregroundColor(let image == nil ? Color.white : Color.primaryColor)
                             }
                             .overlay(
                                 Circle()
@@ -220,38 +285,52 @@ struct CollectedChangeView: View {
                             )
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                if past, let k = key {
+                                if selectable, let k = key {
                                     selectedDate = k
-                                    selectedDayPhotos = photosByDay[k] ?? []
+                                    let all = photosByDay[k] ?? []
+                                    let filtered = all.filter { $0.imageURL.lastPathComponent.lowercased() != "default.png" }
                                     currentPhotoIndex = 0
-                                    showSheet = true
+                                    sheetModel = DaySheetModel(date: k, photos: filtered)
                                 }
                             }
                         }
                     }
                 }
                 .padding(.horizontal, horizontalInset)
-                .padding(.top, 28)   // 요일줄과 확실히 분리
+                .padding(.top, 28)
                 .padding(.bottom, 20)
             }
-            // GeometryReader가 카드 높이 내에서만 계산하도록 고정 높이
             .frame(height: (numRows == 6 ? 234 : 214))
-
+            
             Spacer(minLength: 0)
         }
-        // 카드 스타일 (랭킹 카드와 동일)
         .frame(width: 353, height: numRows == 6 ? 390 : 350, alignment: .top)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 8)
-        .onAppear { loadPhotosFromBackend() }
-        .sheet(isPresented: $showSheet) {
+        
+        // 달 바뀔 때마다 자동 패칭
+        .task(id: monthKey) {
+            fetchMonth(date: currentDate)
+        }
+        
+        // 로딩/에러 오버레이(선택)
+        .overlay {
+            if isLoading {
+                ZStack { Color.black.opacity(0.05).ignoresSafeArea(); ProgressView() }
+            } else if let err = loadError {
+                VStack { Spacer(); Text(err).foregroundColor(.red).padding(.bottom, 8) }
+            }
+        }
+        
+        // 사진 보기 시트
+        .sheet(item: $sheetModel) { model in
             PhotoSheetView(
-                date: selectedDate ?? Date(),
-                photos: selectedDayPhotos,
+                date: model.date,
+                photos: model.photos,
                 currentIndex: $currentPhotoIndex
-            ) { showSheet = false }
-            .presentationDetents([.height(420), .medium])
+            ) { sheetModel = nil }
+                .presentationDetents([.height(420), .medium])
         }
     }
 }

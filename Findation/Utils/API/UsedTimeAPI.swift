@@ -23,7 +23,7 @@ enum UsedTimeAPI {
             .value
     }
     
-    static func getUsedTimeByStartEndData() async throws -> [UsedTime] {
+    static func getUsedTimeByStartEndData(startDate: Date? = nil, endDate: Date? = nil) async throws -> [UsedTime] {
         let token = KeychainHelper.load(forKey: "accessToken") ?? ""
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(token)",
@@ -35,11 +35,24 @@ enum UsedTimeAPI {
         df.locale = Locale(identifier: "en_US_POSIX")
         df.timeZone = TimeZone(secondsFromGMT: 0)
         df.dateFormat = "yyyy-MM-dd"
+        
+        var params: [String] = []
+        var urlString = API.UsedTime.usedTimeRange
+
+        if let startDate = startDate {
+            params.append("start=\(df.string(from: startDate))")
+        }
+        if let endDate = endDate {
+            params.append("end=\(df.string(from: endDate))")
+        }
+        if !params.isEmpty {
+            urlString += "?" + params.joined(separator: "&")
+        }
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .formatted(df)
 
-        return try await AF.request(API.UsedTime.usedTimeRange, method: .get, headers: headers)
+        return try await AF.request(urlString, method: .get, headers: headers)
             .validate(statusCode: 200..<300)
             .serializingDecodable([UsedTime].self, decoder: decoder)
             .value
