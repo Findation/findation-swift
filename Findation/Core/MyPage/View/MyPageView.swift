@@ -88,9 +88,9 @@ struct MyPageScreen: View {
                                 
                                 VStack(spacing: 40){
                                     StatusBubbleView(text: "요즘 집중이 부족해서 배고파요ㅠㅠ")
-                                        .shadow(radius: 10, x: 0, y: 4)
+                                        .shadow(color: Color("Primary"), radius: 4, x: 0, y: 2)
                                     
-                                    Image("fish")
+                                    Image("fish_sunglasses")
                                 }
                                 .offset(y: targetFishYCenter - (fishtankHeight / 2) + fishBobbingOffset)
                                 .onAppear {
@@ -105,7 +105,7 @@ struct MyPageScreen: View {
                         }
                     }
                     
-                    VStack(spacing: 20){
+                    VStack(spacing: -20){
                         CollectedChangeView()
                             .shadow(radius: 10)
                         FocusRankingPagedSection()

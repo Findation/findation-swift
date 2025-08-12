@@ -165,36 +165,43 @@ struct CollectedChangeView: View {
         let numRows = Int(ceil(Double(totalCells) / 7.0))
         
         VStack(spacing: 0) {
-            // 헤더
-            HStack {
-                Button { changeMonth(by: -1) } label: {
-                    Image(systemName: "arrowtriangle.left.fill")
-                        .foregroundStyle(Color("Primary"))
+            ZStack {
+                    // 1. '< 8월 >' 그룹을 중앙에 배치
+                    HStack {
+                        Spacer() // 왼쪽 Spacer
+                        HStack(spacing: 15) {
+                            Button { changeMonth(by: -1) } label: {
+                                Image(systemName: "arrowtriangle.left.fill")
+                                    .foregroundStyle(Color("Primary"))
+                            }
+                            Text(CalendarHelper.currentMonthText(from: currentDate))
+                                .bodytext()
+                                .foregroundColor(Color("Black"))
+                                .frame(minWidth: 60) // 텍스트 너비 고정
+                            Button { changeMonth(by: 1) } label: {
+                                Image(systemName: "arrowtriangle.right.fill")
+                                    .foregroundStyle(Color("Primary"))
+                            }
+                        }
+                        Spacer() // 오른쪽 Spacer
+                    }
+
+                    // 2. '오늘' 버튼을 오른쪽에 배치 (ZStack 내에서 별도 H스택 사용)
+                    HStack {
+                        Spacer() // 왼쪽의 모든 공간을 차지하여 '오늘' 버튼을 오른쪽으로 밀어냅니다.
+                        Button { TodayDate() } label: {
+                            Text("오늘")
+                                .caption1()
+                                .foregroundColor(Color("Primary"))
+                                .frame(width: 40, height: 22)
+                                .background(Color("Secondary"))
+                                .cornerRadius(11)
+                        }
+                    }
                 }
-                Text(CalendarHelper.currentMonthText(from: currentDate))
-                    .font(.body)
-                    .foregroundColor(.black)
-                    .frame(minWidth: 60)
-                
-                Button { changeMonth(by: 1) } label: {
-                    Image(systemName: "arrowtriangle.right.fill")
-                        .foregroundStyle(Color("Primary"))
-                }
-                
-                Spacer()
-                
-                Button { TodayDate() } label: {
-                    Text("오늘")
-                        .font(.caption)
-                        .foregroundColor(Color("Primary"))
-                        .frame(width: 40, height: 22)
-                        .background(Color("Secondary"))
-                        .cornerRadius(11)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 17)
-            .padding(.bottom, 12)
+                .padding(.horizontal, 16) // ZStack 전체의 좌우 패딩
+                .padding(.top, 17)
+                .padding(.bottom, 12)
             
             // 요일 & 날짜
             GeometryReader { geo in
@@ -210,8 +217,8 @@ struct CollectedChangeView: View {
                 ) {
                     ForEach(weekdays, id: \.self) { day in
                         Text(day)
-                            .font(.caption)
-                            .foregroundColor(.black)
+                            .caption2()
+                            .foregroundColor(Color("DarkGray"))
                             .frame(width: dot, height: 22)
                     }
                 }
@@ -297,7 +304,7 @@ struct CollectedChangeView: View {
                 }
                 .padding(.horizontal, horizontalInset)
                 .padding(.top, 28)
-                .padding(.bottom, 20)
+                .padding(.bottom, 15)
             }
             .frame(height: (numRows == 6 ? 234 : 214))
             
@@ -305,8 +312,8 @@ struct CollectedChangeView: View {
         }
         .frame(width: 353, height: numRows == 6 ? 390 : 350, alignment: .top)
         .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 10)
+        .cornerRadius(20)
+        .shadow(color: Color("Primary"), radius: 4, x: 0, y: 2)
         
         // 달 바뀔 때마다 자동 패칭
         .task(id: monthKey) {

@@ -19,8 +19,8 @@ struct HeaderSection: View {
                 VStack(spacing: 4) {
                     (
                         Text(nickname)
-                            .foregroundColor(Color(Color.primaryColor))
-                        + Text("님")
+                            .foregroundColor(Color("Primary"))
+                        + Text("님,")
                             .foregroundColor(Color("Black"))
                     )
                     .title1()
@@ -58,7 +58,7 @@ struct HeaderSection: View {
                 }
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 4)
         .padding(.top, 80)
         .padding(.bottom, 6)
         .background(Color.white)

@@ -28,7 +28,8 @@ struct AddTaskView: View {
             // MARK: - 상단 헤더
             ZStack {
                 Text(routineToEdit == nil ? "루틴 추가" : "루틴 수정")
-                    .font(.system(size: 24, weight: .bold))
+                    .title2()
+                    .foregroundColor(Color("Black"))
 
                 HStack {
                     Button("취소") {
@@ -74,9 +75,9 @@ struct AddTaskView: View {
             // MARK: - 카테고리 입력
             TextField("# 카테고리를 입력하세요.", text: $categoryText)
                 .foregroundColor(.blue)
-                .font(.body)
+                .bodytext()
                 .padding(.horizontal, 20)
-                .padding(.top, 10)
+                .padding(.top, 20)
                 .focused($isFocusedCategory)
                 .onChange(of: isFocusedCategory) { oldValue, newValue in
                     if oldValue == true && newValue == false {
@@ -88,7 +89,7 @@ struct AddTaskView: View {
             TextField("할 일을 입력하세요.", text: $taskText)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled(true)
-                .font(.body)
+                .bodytext()
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
                 .focused($isFocusedTask)
@@ -103,22 +104,23 @@ struct AddTaskView: View {
                     try? await Task.sleep(nanoseconds: 300_000_000)
                     isFocusedTask = true
                 }
+                .padding(.bottom, 20)
 
             // MARK: - 요일 선택
             HStack {
                 ForEach(DATES.indices, id: \.self) { index in
                     Text(DATES[index])
-                        .font(.body)
+                        .bodytext()
                         .frame(width: 45, height: 28)
                         .background(
-                            selectedDays[index] ? Color.blue : Color.white
+                            selectedDays[index] ? Color("Primary") : Color.white
                         )
                         .foregroundColor(
-                            selectedDays[index] ? Color.white : Color.blue
+                            selectedDays[index] ? Color.white : Color("Primary")
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 999)
-                                .stroke(Color.blue, lineWidth: 1)
+                                .stroke(Color("Primary"), lineWidth: 1)
                         )
                         .cornerRadius(999)
                         .onTapGesture {
