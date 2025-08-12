@@ -26,6 +26,7 @@ struct MyPageScreen: View {
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never)) // 기본 점 숨김
                     .frame(height: 420) // 두 뷰 공통 높이
+                    .shadow(radius: 10)
                     
                 }
                 .padding(.horizontal, 16)
@@ -106,7 +107,9 @@ struct MyPageScreen: View {
                     
                     VStack(spacing: -20){
                         CollectedChangeView()
+                            .shadow(radius: 10)
                         FocusRankingPagedSection()
+                            .shadow(radius: 10)
                     }
                     .padding(.top, 550)
                 }

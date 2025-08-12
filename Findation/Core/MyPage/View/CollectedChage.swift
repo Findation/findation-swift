@@ -238,7 +238,6 @@ struct CollectedChangeView: View {
                             Color.clear.frame(width: dot, height: dot)
                         } else {
                             let day = index - offset + 1
-                            let past = isPast(day: day)
                             let selectable = isPastOrToday(day: day)
                             let todayFlag = isToday(day: day)
                             let key = dayKey(for: day)

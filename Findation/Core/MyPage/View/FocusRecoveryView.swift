@@ -74,6 +74,7 @@ struct FocusRecoveryView: View {
         .background(Color.white)
         .cornerRadius(20)
         .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
+        .cornerRadius(10)
     }
 }
 
