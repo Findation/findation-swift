@@ -123,7 +123,7 @@ struct MainView: View {
                                         }
                                     }
                                     .padding(.horizontal, 16)
-                                    .padding(.bottom, 20)
+                                    .padding(.bottom, 40)
                                 }
                                 .background(Color.white)
                                 .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
@@ -310,7 +310,7 @@ struct MainView: View {
                     }
 
                     VStack(spacing: 4) {
-                        Text("\(nickname)님")
+                        Text("\(nickname)님,")
                         Text("오늘도 힘내요!")
                     }
                     .title1()

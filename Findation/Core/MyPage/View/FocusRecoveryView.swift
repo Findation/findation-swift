@@ -5,12 +5,12 @@ struct FocusRecoveryView: View {
     let dataPoints: [CGFloat] = [20, 40, 35, 70, 55, 90, 75]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
             // 헤더
             Text("집중력 회복")
-                .font(.body)
+                .bodytext()
                 .foregroundColor(Color("Primary"))
-                .padding(15)
+                .padding(.top, 15)
 
             // 그래프 영역
             VStack {
@@ -62,7 +62,7 @@ struct FocusRecoveryView: View {
                                 path.addLine(to: point)
                             }
                         }
-                        .stroke(Color("Primary"), lineWidth: 2)
+                        .stroke(Color("Primary"), lineWidth: 1)
                     }
                 }
                 .frame(height: 220)
@@ -72,8 +72,8 @@ struct FocusRecoveryView: View {
         }
         .frame(minWidth: 353, maxWidth: 353, minHeight: 336, alignment: .topLeading)
         .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 10)
+        .cornerRadius(20)
+        .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
     }
 }
 
