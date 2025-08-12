@@ -105,7 +105,9 @@ struct MyPageScreen: View {
                     
                     VStack(spacing: 20){
                         CollectedChangeView()
+                            .shadow(radius: 10)
                         FocusRankingPagedSection()
+                            .shadow(radius: 10)
                     }
                     .padding(.top, 550)
                 }
