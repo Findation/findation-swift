@@ -130,19 +130,34 @@ class RoutineCell: UITableViewCell {
 
         switch gesture.state {
         case .began:
+            longPressTimer?.invalidate()
+            progressView.layer.removeAllAnimations()
+
+            progressWidth.constant = 0
+            contentView.layoutIfNeeded()
+
             progressWidth.constant = contentView.frame.width
             UIView.animate(withDuration: 1.5) {
                 self.contentView.layoutIfNeeded()
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
-            longPressTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
+            longPressTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                self.progressWidthConstraint?.constant = 0
+                UIView.animate(withDuration: 0.2) {
+                    self.contentView.layoutIfNeeded()
+                }
+
+                self.longPressTimer?.invalidate()
+                self.longPressTimer = nil
                 self.onLongPress?()
             }
 
         case .ended, .cancelled, .failed:
             longPressTimer?.invalidate()
             longPressTimer = nil
+            progressView.layer.removeAllAnimations()
             progressWidth.constant = 0
             UIView.animate(withDuration: 0.2) {
                 self.contentView.layoutIfNeeded()
