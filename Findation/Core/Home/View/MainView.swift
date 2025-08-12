@@ -8,7 +8,7 @@ struct MainView: View {
     @State private var showAllRoutines = false
 
     private var todaysRoutines: [Routine] {
-        vm.routines.filter { $0.matches(date: currentDate) }
+        vm.routines.filter { $0.matches(date: currentDate) || $0.isNotRepeated() }
     }
     private var visibleRoutines: [Routine] {
         let sorted = todaysRoutines.sorted {
