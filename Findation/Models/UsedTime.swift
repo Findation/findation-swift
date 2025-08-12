@@ -10,9 +10,11 @@ import Foundation
 struct UsedTime: Decodable {
     let date: Date
     let usedTime: Int
+    let images: [URL]
 
     enum CodingKeys: String, CodingKey {
         case date
         case usedTime = "used_time"
+        case images
     }
 }

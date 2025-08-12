@@ -102,7 +102,7 @@ class RoutineCell: UITableViewCell {
         spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         // 메인 수평 스택 (제목 + 태그 + 시간)
-        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, spacer, timeLabel])
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, categoryLabel, spacer])
         mainStack.axis = .horizontal
         mainStack.spacing = 10
         mainStack.alignment = .center

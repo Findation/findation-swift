@@ -151,7 +151,24 @@ struct MainView: View {
                     CompletionConfirmationView(
                         routineTitle: routine.title,
                         elapsedTime: elapsedSnapshot,
-                        onComplete: { /* 완료 처리 */ },
+                        onComplete: {
+                            Task {
+                                let usedSeconds = Int(elapsedSnapshot.rounded())
+                                
+                                UsedTimeAPI.postUsedTime(usedTime: usedSeconds, satisfaction: 5, image: nil) { result in
+                                switch result {
+                                    case .success:
+                                        print("성공")
+                                    case .failure(let error):
+                                        print("실패 \(error)")
+                                    }
+                                }
+                                await MainActor.run {
+                                    vm.markCompleted(routine.id)
+                                    showCompletionModal = false
+                                }
+                            }
+                        },
                         onPhotoProof: {
                             showCamera = true
                             showCompletionModal = false
