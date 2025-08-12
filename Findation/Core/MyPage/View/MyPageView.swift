@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MyPageScreen: View {
+    let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
     @State private var fishBobbingOffset: CGFloat = 0
     
     let fishtankHeight: CGFloat = 705
@@ -69,7 +70,7 @@ struct MyPageScreen: View {
                             
                             VStack(spacing: 80) {
                                 HStack {
-                                    Text("세이님의 어항")
+                                    Text("\(nickname)님의 어항")
                                         .title1()
                                         .foregroundColor(.white)
                                         .frame(width: 205, height: 33)
