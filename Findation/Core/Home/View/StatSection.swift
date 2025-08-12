@@ -92,7 +92,8 @@ struct StatSection: View {
                         Spacer()
                         Text("오늘")
                     }
-                    .font(.caption)
+                    .caption1()
+                    .foregroundColor(Color("DarkGray"))
                 }
             }
         }
