@@ -113,8 +113,8 @@ struct MainView: View {
                                             .padding(.top, 12)
                                         }
                                     }
-                                    .padding(.horizontal, 16)
-                                    .padding(.bottom, 40)
+                                    .padding(.leading, 16)
+                                    .padding(.bottom, 16)
                                 }
                                 .background(Color.white)
                                 .cornerRadius(32, corners: [.bottomLeft, .bottomRight])

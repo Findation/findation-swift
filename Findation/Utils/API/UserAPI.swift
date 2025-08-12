@@ -31,7 +31,6 @@ enum UserAPI {
 
     static func searchUser(nickname: String) async throws -> [SearchUser] {
         let token = KeychainHelper.load(forKey: "accessToken") ?? ""
-        print(token)
         
         let params = ["nickname": nickname]
         let headers: HTTPHeaders = ["Authorization": "Bearer \(token)"]
