@@ -29,9 +29,12 @@ enum UserAPI {
             .value
     }
 
-    static func searchUser(with accessToken: String, nickname: String) async throws -> [User] {
+    static func searchUser(nickname: String) async throws -> [SearchUser] {
+        let token = KeychainHelper.load(forKey: "accessToken") ?? ""
+        print(token)
+        
         let params = ["nickname": nickname]
-        let headers: HTTPHeaders = ["Authorization": "Bearer \(accessToken)"]
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(token)"]
 
         return try await AF.request(API.User.searchUser,
                                     method: .get,
@@ -39,7 +42,7 @@ enum UserAPI {
                                     encoding: URLEncoding.default,
                                     headers: headers)
             .validate(statusCode: 200..<300)
-            .serializingDecodable([User].self)
+            .serializingDecodable([SearchUser].self)
             .value
     }
 
