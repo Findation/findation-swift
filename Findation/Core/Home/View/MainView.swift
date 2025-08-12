@@ -2,9 +2,11 @@ import SwiftUI
 import UIKit
 
 struct MainView: View {
+    // MARK: Env / VM
     @EnvironmentObject var session: SessionStore
     @StateObject private var vm = RoutinesViewModel()
 
+<<<<<<< Updated upstream
     // 바인딩 필요 시:
     private var routinesBinding: Binding<[Routine]> {
         Binding(get: { vm.routines }, set: { vm.routines = $0 })
@@ -18,37 +20,55 @@ struct MainView: View {
             set: { _ in /* no-op: 개별 액션(onEdit/onDelete 등)에서 원본 vm.routines를 갱신하므로 여기선 불필요 */ }
         )
     }
-    let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
-    
+=======
+    // MARK: 헤더/리스트
     @State private var currentDate = Date()
-      
+    @State private var showAllRoutines = false
+    private var todaysRoutines: [Routine] {
+        vm.routines.filter { $0.matches(date: currentDate) || $0.isNotRepeated() }
+    }
+    private var visibleRoutines: [Routine] {
+        let sorted = todaysRoutines.sorted { ($0.isCompleted ? 1 : 0) < ($1.isCompleted ? 1 : 0) }
+        return showAllRoutines ? sorted : Array(sorted.prefix(5))
+    }
+    private var todaysBinding: Binding<[Routine]> {
+        Binding(get: { visibleRoutines }, set: { _ in })
+    }
+
+    // MARK: 편집/삭제/시트/토큰
+>>>>>>> Stashed changes
+    let nickname = KeychainHelper.load(forKey: "nickname") ?? "어푸"
     @State private var showAddTask = false
     @State private var editTargetRoutine: Routine? = nil
-    @State private var showCompletionConfirmaion: Bool = false
+    @State private var showDeleteConfirmation = false
+    @State private var routineToDelete: Routine? = nil
 
+    // MARK: 타이머 & 오버레이
     @State private var activeRoutine: Routine? = nil
-
     @State private var showTimerOverlay = false
+    @State private var overlayDocked = false
+    @Namespace private var overlayNS
+
     @State private var timerValue: TimeInterval = 0
     @State private var timerRunning = false
     @State private var timer: Timer? = nil
     @State private var dragOffset: CGFloat = 0
 
-    @State private var showDeleteConfirmation = false
-    @State private var routineToDelete: Routine? = nil
+    // 도킹 미니바 드래그 시 살짝 떠오르는 오프셋
+    @State private var dockDragYOffset: CGFloat = 0
 
+    // MARK: 완료 플로우
     @State private var showCompletionModal = false
-
-    @State private var showLastModal = false
     @State private var elapsedSnapshot: TimeInterval = 0
-    
+    @State private var showLastModal = false
     @State private var showCamera = false
     @State private var proofImage: UIImage? = nil
-    
+
     var body: some View {
         NavigationStack {
-            ZStack {
+            ZStack(alignment: .top) {
                 Color("Secondary").ignoresSafeArea()
+<<<<<<< Updated upstream
                 
                 if vm.isLoading {
                     ProgressView()
@@ -96,9 +116,77 @@ struct MainView: View {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                             if let last = todaysRoutines.last ?? vm.routines.last {
                                                 scrollProxy.scrollTo(last.id, anchor: .bottom)
+=======
+
+                // ── 메인 컨텐츠
+                Group {
+                    if vm.isLoading {
+                        ProgressView()
+                    } else {
+                        ScrollViewReader { scrollProxy in
+                            ScrollView(showsIndicators: false) {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    // 헤더 카드
+                                    VStack(spacing: 0) {
+                                        HeaderSection(
+                                            date: currentDate,
+                                            nickname: nickname,
+                                            showAddTask: $showAddTask
+                                        )
+                                        .padding(.horizontal)
+
+                                        // 루틴 리스트
+                                        VStack(spacing: 0) {
+                                            UIKitRoutineListView(
+                                                routines: todaysBinding,
+                                                onLongPressComplete: { routine in
+                                                    guard !routine.isCompleted else { return }
+                                                    startTimer(for: routine)
+                                                },
+                                                onEdit: { routine in
+                                                    editTargetRoutine = routine
+                                                    showAddTask = true
+                                                },
+                                                onDelete: { routine in
+                                                    routineToDelete = routine
+                                                    showDeleteConfirmation = true
+                                                    RoutineAPI.deleteRoutine(id: routine.id) { success in
+                                                        if success,
+                                                           let idx = vm.routines.firstIndex(where: { $0.id == routine.id }) {
+                                                            vm.routines.remove(at: idx)
+                                                        }
+                                                    }
+                                                },
+                                                onComplete: { routine in
+                                                    Task { await MainActor.run { vm.markCompleted(routine.id) } }
+                                                    activeRoutine = routine
+                                                    showCompletionModal = true
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                        if let last = todaysRoutines.last ?? vm.routines.last {
+                                                            scrollProxy.scrollTo(last.id, anchor: .bottom)
+                                                        }
+                                                    }
+                                                }
+                                            )
+                                            .frame(height: 54 * CGFloat(visibleRoutines.count))
+
+                                            if todaysRoutines.count > 5 {
+                                                Button {
+                                                    withAnimation { showAllRoutines.toggle() }
+                                                } label: {
+                                                    Image(systemName: showAllRoutines ? "chevron.up" : "chevron.down")
+                                                        .foregroundColor(Color(Color.primaryColor))
+                                                        .padding(12)
+                                                        .background(Circle().fill(Color(hex: "#EDF5FC")))
+                                                }
+                                                .padding(.top, 12)
+>>>>>>> Stashed changes
                                             }
                                         }
+                                        .padding(.horizontal, 16)
+                                        .padding(.bottom, 20)
                                     }
+<<<<<<< Updated upstream
                                 )
                                 .frame(height: CGFloat(todaysRoutines.count * 56) + (todaysRoutines.count > 5 ? 40 : 0))
                                 .padding(.bottom, 20)
@@ -108,16 +196,102 @@ struct MainView: View {
 
                                 ExploreSection()
                                     .padding(.bottom, 40)
+=======
+                                    .background(Color.white)
+                                    .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
+                                    .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
+
+                                    Spacer().frame(height: 22)
+                                    StatSection()
+                                    Spacer().frame(height: 22)
+                                    ExploreSection()
+                                    Spacer().frame(height: 90)
+                                }
+>>>>>>> Stashed changes
                             }
+                            .refreshable { await vm.load() }
                         }
                     }
                 }
-                
+
+                // ── 도킹 미니바 (상단 전체 파란색, 상태바 포함/날짜줄까지 가림)
+                if overlayDocked, let routine = activeRoutine {
+                    DockedOverlayCard(
+                        routine: routine,
+                        timerText: timerString(from: timerValue),
+                        timerRunning: timerRunning,
+                        playPauseTapped: { toggleFromDock() },
+                        swipeUpToFinish: { finishFromDock() },
+                        dragYOffset: $dockDragYOffset,
+                        ns: overlayNS
+                    )
+                    .zIndex(3)
+                }
+
+                // ── 전체 오버레이(풀 화면)
+                if let routine = activeRoutine {
+                    ZStack {
+                        Color.black.opacity(showTimerOverlay ? 0.5 : 0)
+                            .ignoresSafeArea()
+                            .animation(.easeInOut(duration: 0.35), value: showTimerOverlay)
+
+                        if showTimerOverlay {
+                            fullOverlay(for: routine)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                                .zIndex(4)
+                        }
+                    }
+                }
+            }
+            .ignoresSafeArea()
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+            .task(id: session.isAuthenticated) {
+                guard session.isAuthenticated else { return }
+                await vm.load()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                Task { await vm.load() }
+            }
+            .fullScreenCover(isPresented: $showCamera) {
+                ZStack { Color.black.ignoresSafeArea(); CameraPicker { image in self.proofImage = image } }
+            }
+            .sheet(isPresented: $showAddTask, onDismiss: { Task { await vm.load() } }) {
+                AddTaskView(routineToEdit: $editTargetRoutine).id(editTargetRoutine?.id)
+            }
+            .alert(isPresented: $showDeleteConfirmation) {
+                Alert(
+                    title: Text("정말 삭제하시겠어요?"),
+                    message: Text("이 루틴은 삭제 후 복구할 수 없습니다."),
+                    primaryButton: .destructive(Text("삭제")) {
+                        if let r = routineToDelete {
+                            vm.routines.removeAll { $0.id == r.id }
+                            routineToDelete = nil
+                        }
+                    },
+                    secondaryButton: .cancel { routineToDelete = nil }
+                )
+            }
+            .onDisappear { timer?.invalidate() }
+            .overlay {
                 if showCompletionModal, let routine = activeRoutine {
                     CompletionConfirmationView(
                         routineTitle: routine.title,
                         elapsedTime: elapsedSnapshot,
+<<<<<<< Updated upstream
                         onComplete: { /* 완료 처리 */ },
+=======
+                        onComplete: {
+                            Task {
+                                let used = Int(elapsedSnapshot.rounded())
+                                UsedTimeAPI.postUsedTime(usedTime: used, satisfaction: 5, image: nil) { _ in }
+                                await MainActor.run {
+                                    vm.markCompleted(routine.id)
+                                    showCompletionModal = false
+                                }
+                            }
+                        },
+>>>>>>> Stashed changes
                         onPhotoProof: {
                             showCamera = true
                             showCompletionModal = false
@@ -125,17 +299,26 @@ struct MainView: View {
                         },
                         onDismiss: { showCompletionModal = false }
                     )
+                    .zIndex(10)
                 }
-                
-                if showLastModal, let proofImage = proofImage, let routine = activeRoutine {
-                    LastModalView(title: routine.title,proofImage: proofImage, showLastModal: $showLastModal) {
+                if showLastModal, let proof = proofImage, let routine = activeRoutine {
+                    LastModalView(title: routine.title, proofImage: proof, showLastModal: $showLastModal) {
                         Task {
+<<<<<<< Updated upstream
                             await MainActor.run {
                                 vm.markCompleted(routine.id)
+=======
+                            let used = Int(elapsedSnapshot.rounded())
+                            if let data = proof.jpegData(compressionQuality: 0.8) {
+                                UsedTimeAPI.postUsedTime(usedTime: used, satisfaction: 5, image: data) { _ in }
+>>>>>>> Stashed changes
                             }
+                            await MainActor.run { vm.markCompleted(routine.id) }
                         }
                     }
+                    .zIndex(11)
                 }
+<<<<<<< Updated upstream
                 
                 if let routine = activeRoutine {
                     ZStack {
@@ -216,132 +399,265 @@ struct MainView: View {
         } else {
             timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 timerValue += 1
+=======
+>>>>>>> Stashed changes
             }
         }
-        timerRunning.toggle()
     }
 
-    func timerOverlay(for routine: Routine) -> some View {
+    // MARK: - 전체 오버레이(풀 화면) – 레이아웃 수정본
+    @ViewBuilder
+    private func fullOverlay(for routine: Routine) -> some View {
         GeometryReader { geo in
-            VStack {
+            let topInset = UIApplication.shared.topSafeArea
+            let bottomInset = UIApplication.shared.bottomSafeArea
+
+            VStack(spacing: 0) {
+                // 상단: 인사(두 줄) + 우측 상단 버튼
                 ZStack {
+                    VStack(spacing: 8) {
+                        Text("\(nickname)님")
+                            .foregroundColor(.white)
+                            .title1()
+                            .matchedGeometryEffect(id: "nickname", in: overlayNS)
+                        Text("오늘도 힘내요!")
+                            .foregroundColor(.white)
+                            .title1()
+                    }
+
                     HStack {
                         Spacer()
-                        Button(action: pauseOrResumeTimer) {
+                        Button(action: pauseOrResumeFromOverlay) {
                             Image(systemName: timerRunning ? "pause.fill" : "play.fill")
                                 .foregroundColor(.blue)
-                                .frame(width: 50, height: 50)
-                                .background(Color.white)
-                                .clipShape(Circle())
+                                .frame(width: 56, height: 56)
+                                .background(
+                                    Circle()
+                                        .fill(Color.white)
+                                        .matchedGeometryEffect(id: "button", in: overlayNS)
+                                )
                         }
                     }
-
-                    VStack(spacing: 4) {
-                        Text("\(nickname)님")
-                        Text("오늘도 힘내요!")
-                    }
-                    .title1()
-                    .foregroundColor(.white)
                 }
+                .padding(.top, topInset + 24)
                 .padding(.horizontal, 24)
-                .padding(.top, 80)
 
-                Spacer()
+                // 중앙: 큰 원 + 원 안(루틴명, 타이머)
+                Spacer(minLength: 20)
 
+                let circleSize = min(geo.size.width, geo.size.height) * 0.8
                 ZStack {
                     Circle()
                         .stroke(Color.white, lineWidth: 1)
-                        .frame(width: 310, height: 310)
+                        .frame(width: circleSize, height: circleSize)
+                        .matchedGeometryEffect(id: "circle", in: overlayNS)
 
                     VStack(spacing: 12) {
                         Text(routine.title)
+                            .foregroundColor(.white.opacity(0.85))
                             .bodytext()
-                            .foregroundColor(.white)
+                            .matchedGeometryEffect(id: "title", in: overlayNS)
 
                         Text(timerString(from: timerValue))
-                            .timeLarge()
                             .foregroundColor(.white)
+                            .timeLarge()
+                            .matchedGeometryEffect(id: "time", in: overlayNS)
                     }
+                    .frame(width: circleSize, height: circleSize) // ← 원 크기만큼 고정
+                        .multilineTextAlignment(.center)
                 }
 
                 Spacer()
 
-                VStack(spacing: 30) {
-                    Image("swipe")
-                        .resizable()
-                        .frame(width: 22, height: 32)
-
+                // 하단 안내
+                VStack(spacing: 16) {
+                    Image("swipe").resizable().frame(width: 22, height: 32)
                     Text("위로 스와이프해서 종료하기")
                         .footNote()
                         .foregroundColor(.white.opacity(0.7))
                 }
-                .padding(.bottom, 88)
+                .padding(.bottom, bottomInset + 24)
             }
             .frame(width: geo.size.width, height: geo.size.height)
-            .background(Color("Primary"))
+            .background(
+                Color("Primary")
+                    .matchedGeometryEffect(id: "container", in: overlayNS)
+            )
             .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
             .offset(y: dragOffset)
             .gesture(
                 DragGesture()
-                    .onChanged { value in
-                        if value.translation.height < 0 {
-                            dragOffset = value.translation.height
-                        }
-                    }
-                    .onEnded { value in
-                        // ❌ 여기서 바로 모달 띄우지 말자
-                        if value.translation.height < -150 {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                dragOffset = -geo.size.height
-                            }
+                    .onChanged { v in if v.translation.height < 0 { dragOffset = v.translation.height } }
+                    .onEnded { v in
+                        if v.translation.height < -150 {
+                            withAnimation(.easeInOut(duration: 0.3)) { dragOffset = -geo.size.height }
                             elapsedSnapshot = timerValue
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 showTimerOverlay = false
                                 dragOffset = 0
-                                endTimer()                // 여기서 timerValue가 0으로 초기화돼도 OK(이미 스냅샷 있음)
-                                showCompletionModal = true // 이제 모달 오픈
+                                endTimer()
+                                showCompletionModal = true
                             }
                         } else {
-                            withAnimation {
-                                dragOffset = 0
-                            }
+                            withAnimation { dragOffset = 0 }
                         }
                     }
             )
         }
     }
 
-    func endTimer() {
-        if let routine = activeRoutine,
-           let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
-            vm.routines[index].elapsedTime += timerValue
+    // MARK: - 도킹된 미니바(상단 전체, 상태바 포함)
+    private func DockedOverlayCard(
+        routine: Routine,
+        timerText: String,
+        timerRunning: Bool,
+        playPauseTapped: @escaping () -> Void,
+        swipeUpToFinish: @escaping () -> Void,
+        dragYOffset: Binding<CGFloat>,
+        ns: Namespace.ID
+    ) -> some View {
+        let topInset = UIApplication.shared.topSafeArea
+
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(routine.title)
+                        .foregroundColor(.white)
+                        .bodytext()
+                        .matchedGeometryEffect(id: "title", in: ns)
+
+                    Text(timerText)
+                        .foregroundColor(.white)
+                        .timeLarge()
+                        .matchedGeometryEffect(id: "time", in: ns)
+                }
+                Spacer()
+                Button(action: playPauseTapped) {
+                    Image(systemName: timerRunning ? "pause.fill" : "play.fill")
+                        .foregroundColor(Color("Primary"))
+                        .frame(width: 56, height: 56)
+                        .background(
+                            Circle()
+                                .fill(Color.white)
+                                .matchedGeometryEffect(id: "button", in: ns)
+                        )
+                }
+            }
+            .padding(.top, topInset + 20)
+            .padding(.horizontal, 20)
+
+            Text("위로 스와이프해서 종료하기")
+                .footNote()
+                .foregroundColor(.white.opacity(0.85))
+                .padding(.top, 16)
+                .padding(.horizontal, 20)
+
+            Spacer(minLength: 16)
         }
+        .frame(height: 250) // 날짜/추가하기 줄 가려지도록
+        .frame(maxWidth: .infinity)
+        .background(
+            Color("Primary")
+                .matchedGeometryEffect(id: "container", in: ns)
+                .ignoresSafeArea(edges: .top)
+        )
+        .cornerRadius(28, corners: [.bottomLeft, .bottomRight])
+        .shadow(color: Color.black.opacity(0.18), radius: 12, x: 0, y: 8)
+        .offset(y: dragYOffset.wrappedValue)
+        .contentShape(Rectangle())
+        .highPriorityGesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { v in
+                    if v.translation.height < 0 {
+                        dragYOffset.wrappedValue = max(-20, v.translation.height / 4)
+                    } else {
+                        dragYOffset.wrappedValue = 0
+                    }
+                }
+                .onEnded { v in
+                    defer { withAnimation(.spring(response: 0.25)) { dragYOffset.wrappedValue = 0 } }
+                    if v.translation.height < -80 { swipeUpToFinish() } // 위로 스와이프 종료
+                }
+        )
+    }
+
+    // MARK: - 액션들
+    func startTimer(for routine: Routine) {
+        timerValue = 0
+        timerRunning = true
         timer?.invalidate()
-        timer = nil
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in timerValue += 1 }
+        activeRoutine = routine
+        overlayDocked = false
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) { showTimerOverlay = true }
+    }
+
+    func pauseOrResumeFromOverlay() {
+        if timerRunning {
+            timer?.invalidate(); timerRunning = false
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+                showTimerOverlay = false
+                overlayDocked = true
+            }
+        } else {
+            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in timerValue += 1 }
+            timerRunning = true
+        }
+    }
+
+    func toggleFromDock() {
+        if timerRunning {
+            timer?.invalidate(); timerRunning = false
+        } else {
+            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in timerValue += 1 }
+            timerRunning = true
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+                overlayDocked = false
+                showTimerOverlay = true
+            }
+        }
+    }
+
+    func finishFromDock() {
+        elapsedSnapshot = timerValue
+        endTimer()
+        withAnimation(.easeInOut(duration: 0.25)) {
+            overlayDocked = false
+            showTimerOverlay = false
+        }
+        showCompletionModal = true
+    }
+
+    func endTimer() {
+        if let r = activeRoutine,
+           let idx = vm.routines.firstIndex(where: { $0.id == r.id }) {
+            vm.routines[idx].elapsedTime += timerValue
+        }
+        timer?.invalidate(); timer = nil
         timerValue = 0
         timerRunning = false
     }
 
-    func completeRoutine(_ routine: Routine) {
-        if let index = vm.routines.firstIndex(where: { $0.id == routine.id }) {
-            vm.routines[index].isCompleted = true
-            let completed = vm.routines.remove(at: index)
-            vm.routines.append(completed)
-        }
-    }
-
-    func timerString(from time: TimeInterval) -> String {
-        let h = Int(time) / 3600
-        let m = Int(time) % 3600 / 60
-        let s = Int(time) % 60
+    func timerString(from t: TimeInterval) -> String {
+        let h = Int(t) / 3600, m = Int(t) % 3600 / 60, s = Int(t) % 60
         return String(format: "%02d:%02d:%02d", h, m, s)
-    }
-
-    func editRoutine(_ routine: Routine) {
-        editTargetRoutine = routine
     }
 }
 
+// MARK: - Safe Area helper
+private extension UIApplication {
+    var topSafeArea: CGFloat {
+        (connectedScenes.first as? UIWindowScene)?
+            .keyWindow?.safeAreaInsets.top ?? 0
+    }
+    var bottomSafeArea: CGFloat {
+        (connectedScenes.first as? UIWindowScene)?
+            .keyWindow?.safeAreaInsets.bottom ?? 0
+    }
+}
+
+// MARK: - Preview
 #Preview {
     MainView()
+        .environmentObject(SessionStore())
 }
