@@ -13,6 +13,7 @@ struct MenuView: View {
                     VStack(alignment: .leading) {
                         Text("내 이름 설정")
                             .headline()
+                            .foregroundColor(Color("Primary"))
 
                         TextField("이름을 입력하세요", text: $userName)
                             .padding(6)
@@ -32,11 +33,12 @@ struct MenuView: View {
                         HStack {
                             Text("친구 목록")
                                 .headline()
+                                .foregroundColor(Color("Primary"))
 
                             Spacer()
 
                             NavigationLink(destination: FriendAddView()) {
-                                Text("친구 추가")
+                                Text("+ 친구추가")
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 5)
                                     .background(Color("Secondary"))
@@ -87,5 +89,12 @@ struct MenuView: View {
         .background(Color("LightGray"))
         .navigationBarBackButtonHidden(false)
         .navigationBarHidden(false)
+    }
+}
+
+#Preview {
+    NavigationStack {
+        MenuView()
+            .environmentObject(SessionStore())
     }
 }
