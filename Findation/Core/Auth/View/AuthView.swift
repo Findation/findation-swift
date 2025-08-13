@@ -46,7 +46,9 @@ struct AuthView: View {
     
                             session.login(accessToken: auth.access,
                                           refreshToken: auth.refresh,
-                                          nickname: auth.user.nickname)
+                                          nickname: auth.user.nickname,
+                                          userID: auth.user.id,
+                            )
                         } catch {
                             errorMessage = "로그인에 실패했어요. 입력 정보를 확인해 주세요."
                             showPopup = true
