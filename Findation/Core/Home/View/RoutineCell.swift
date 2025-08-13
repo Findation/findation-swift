@@ -36,7 +36,7 @@ class RoutineCell: UITableViewCell {
 
     func configure(with routine: Routine) {
         titleLabel.text = routine.title
-        categoryLabel.text = routine.category
+        categoryLabel.text = "#\(routine.category)"
         timeLabel.text = formatTime(routine.elapsedTime)
         isCompleted = routine.isCompleted
 
