@@ -22,5 +22,6 @@ struct FriendRequestResponse: Decodable, Identifiable {
 
 struct FriendRequestUserResponse: Decodable, Identifiable {
     let id: String
-    let username: String
+    let nickname: String
+    let total_time: Float
 }
