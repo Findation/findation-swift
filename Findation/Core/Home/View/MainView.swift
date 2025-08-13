@@ -55,17 +55,7 @@ struct MainView: View {
         NavigationStack {
             ZStack(alignment: .top) {
                 Color("Secondary").ignoresSafeArea()
-             Group {   
-                if vm.isLoading {
-                    ProgressView()
-                } else {
-                    ScrollViewReader { scrollProxy in
-                        ScrollView(showsIndicators: false) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                VStack(spacing:0) {
-                                    HeaderSection(date: currentDate, nickname: nickname, showAddTask: $showAddTask)
-                                        .padding(.horizontal)
-                                        .padding(.bottom, 16)
+             Group {
                     if vm.isLoading {
                         ProgressView()
                     } else {
@@ -80,6 +70,7 @@ struct MainView: View {
                                             showAddTask: $showAddTask
                                         )
                                         .padding(.horizontal)
+                                        .padding(.bottom, 18)
 
                                         // 루틴 리스트
                                         VStack(spacing: 0) {
@@ -115,6 +106,8 @@ struct MainView: View {
                                                     withAnimation { showAllRoutines.toggle() }
                                                 } label: {
                                                     Image(systemName: showAllRoutines ? "chevron.up" : "chevron.down")
+                                                        .resizable()
+                                                        .frame(width: 14, height: 8)
                                                         .foregroundColor(Color(Color.primaryColor))
                                                         .padding(12)
                                                         .background(Circle().fill(Color(hex: "#EDF5FC")))
@@ -122,11 +115,9 @@ struct MainView: View {
                                                 .padding(.top, 12)
                                             }
                                         }
-                                        .padding(.horizontal, 16)
-                                        .padding(.bottom, 20)
                                     }
                                     .padding(.leading, 16)
-                                    .padding(.bottom, 16)
+                                    .padding(.bottom, 20)
                                     .background(Color.white)
                                     .cornerRadius(32, corners: [.bottomLeft, .bottomRight])
                                     .shadow(color: Color(hex: "A2C6FF"), radius: 4, x: 0, y: 2)
@@ -142,6 +133,7 @@ struct MainView: View {
                         }
                     }
                 }
+                                
 
                 // ── 도킹 미니바 (상단 전체 파란색, 상태바 포함/날짜줄까지 가림)
                 if overlayDocked, let routine = activeRoutine {

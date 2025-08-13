@@ -56,9 +56,11 @@ struct AddTaskView: View {
                                 case .success:
                                     // 루틴 수정 성공
                                     print("PATCH ROUTINE SUCCESS")
+                                    routineToEdit = nil
                                 case .failure:
                                     // 루틴 등록 실패
                                     print("PATCH ROUTINE FAILED")
+                                    routineToEdit = nil
                                 }
                             }
                         }
