@@ -97,7 +97,7 @@ struct MyPageScreen: View {
                                     startFishBobbingAnimation()
                                 }
                             }
-                            .padding(.bottom, 830)
+                            .padding(.bottom, 800)
                         }
                         
                         VStack {
