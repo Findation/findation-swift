@@ -70,7 +70,7 @@ struct MainView: View {
                                             showAddTask: $showAddTask
                                         )
                                         .padding(.horizontal)
-                                        .padding(.bottom, 18)
+                                        .padding(.bottom, 10)
 
                                         // 루틴 리스트
                                         VStack(spacing: 0) {
