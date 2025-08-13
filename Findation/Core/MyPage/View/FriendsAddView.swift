@@ -5,6 +5,7 @@ struct FriendAddView: View {
     @State private var searchResults: [SearchUser] = []
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
+    @State private var showAlert: Bool = false
     
     
     var body: some View {
@@ -26,6 +27,7 @@ struct FriendAddView: View {
                         Task {
                             isLoading = true
                             searchResults = try await UserAPI.searchUser(nickname: nickname)
+                            showAlert = true
                             isLoading = false
                         }
                     }) {
@@ -36,6 +38,16 @@ struct FriendAddView: View {
                     }
                 }
                 .padding(.horizontal)
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("친구 추가 완료"),
+                        message: Text("친구의 요청 수락을 기다려주세요."),
+                        primaryButton: .destructive(Text("확인")) {
+                            showAlert = false
+                        },
+                        secondaryButton: .cancel {  }
+                    )
+                }
             }
             
             if isLoading {

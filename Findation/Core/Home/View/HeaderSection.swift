@@ -13,7 +13,7 @@ struct HeaderSection: View {
     @Binding var showAddTask: Bool
     
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 20) {
             // MARK: - 이름 & 문장
             VStack(spacing: 12) {
                 VStack(spacing: 4) {
@@ -46,21 +46,20 @@ struct HeaderSection: View {
                 }) {
                     HStack(spacing: 4){
                         Image(systemName: "plus")
-                            .font(.system(size:14))
-                        Text("추가하기")
+                            .font(.system(size:25))
                     }
-                    .foregroundColor(Color("Primary"))
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(Color.white)
                     .font(.subheadline)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(Color("Secondary"))
-                    .clipShape(RoundedRectangle(cornerRadius: 999))
+                    .background(Color(Color.primaryColor))
+                    .clipShape(Circle())
                 }
             }
         }
         .padding(.horizontal, 4)
         .padding(.top, 80)
-        .padding(.bottom, 6)
         .background(Color.white)
     }
 }

@@ -27,23 +27,62 @@ final class RoutinesViewModel: ObservableObject {
     init() {
         loadCompletedToday()
     }
+    
+    private let elapsedKeyPrefix = "elapsedById_"
 
+    private var todayElapsedKey: String {
+        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"
+        return elapsedKeyPrefix + f.string(from: Date())
+    }
+
+    private func saveElapsedTimes() {
+        let dict = Dictionary(uniqueKeysWithValues: routines.map { ($0.id, $0.elapsedTime) })
+        UserDefaults.standard.set(dict, forKey: todayElapsedKey)
+    }
+
+    private func loadElapsedTimes() -> [String: Double] {
+        (UserDefaults.standard.dictionary(forKey: todayElapsedKey) as? [String: Double]) ?? [:]
+    }
+    
+    @MainActor
+    func incrementElapsed(for id: String, by seconds: TimeInterval) {
+        guard let i = routines.firstIndex(where: { $0.id == id }) else { return }
+        routines[i].elapsedTime += seconds
+        saveElapsedTimes() // ← 변경사항 영구 저장
+    }
+
+    @MainActor
     func load() async {
-        await MainActor.run { isLoading = true; error = nil }
-
+        isLoading = true
+        defer { isLoading = false }
         do {
-            let data = try await RoutineAPI.getRoutines()
-            let merged = mergeWithCompletedToday(data)
+            // 0) 오늘 저장된 elapsed 로드
+            let persistedElapsed = loadElapsedTimes()
 
-            await MainActor.run {
-                self.routines = merged
-                self.isLoading = false
+            // 1) 서버에서 최신 루틴
+            let fetched = try await RoutineAPI.getRoutines()
+
+            // 2) 기존 메모리 elapsed 보존(앱 실행 중 변경분 유지용)
+            let inMemoryElapsed = Dictionary(uniqueKeysWithValues: routines.map { ($0.id, $0.elapsedTime) })
+
+            // 3) 하나의 루프에서 완료상태 + elapsed 머지
+            var merged: [Routine] = []
+            merged.reserveCapacity(fetched.count)
+            for var r in fetched {
+                // (완료 상태) UserDefaults의 completedToday 반영
+                r.isCompleted = completedToday.contains(r.id)
+
+                // (elapsed) 우선순위: 실행 중 변경값 > 저장값 > 서버값(0)
+                if let mem = inMemoryElapsed[r.id] {
+                    r.elapsedTime = mem
+                } else if let saved = persistedElapsed[r.id] {
+                    r.elapsedTime = saved
+                }
+                merged.append(r)
             }
+            self.routines = merged
         } catch {
-            await MainActor.run {
-                self.error = error.localizedDescription
-                self.isLoading = false
-            }
+            print("load() failed:", error)
         }
     }
 
