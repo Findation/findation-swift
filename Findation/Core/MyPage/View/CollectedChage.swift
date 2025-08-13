@@ -253,7 +253,7 @@ struct CollectedChangeView: View {
                                                     .scaledToFill()
                                                     .frame(width: dot, height: dot)
                                                     .clipped()
-                                                    .opacity(0.7)
+                                                    .opacity(0.8)
                                             case .failure(_):
                                                 Color(Color.primaryColor)
                                             case .empty:

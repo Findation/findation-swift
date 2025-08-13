@@ -41,7 +41,7 @@ struct RegisterView: View {
                             print("access:", auth.access)
                             print("refresh:", auth.refresh)
                             // TODO: Keychain 저장
-                            session.login(accessToken: auth.access, refreshToken: auth.refresh, nickname: auth.user.nickname)
+                            session.login(accessToken: auth.access, refreshToken: auth.refresh, nickname: auth.user.nickname, userID: auth.user.id)
                             
                         } catch {
                             showPopup = true
