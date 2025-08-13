@@ -3,12 +3,12 @@ import SwiftUI
 struct AddTaskView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var routineToEdit: Routine?
-
+    
     @State private var taskText: String = ""
     @State private var categoryText: String = ""
     @FocusState private var isFocusedTask: Bool
     @FocusState private var isFocusedCategory: Bool
-
+    
     @State private var repeatWeekly: Bool = false
     @State private var selectedDays: [Bool] = Array(repeating: false, count: 7)
     
@@ -30,14 +30,14 @@ struct AddTaskView: View {
                 Text(routineToEdit == nil ? "루틴 추가" : "루틴 수정")
                     .title2()
                     .foregroundColor(Color("Black"))
-
+                
                 HStack {
                     Button("취소") {
                         dismiss()
                     }
-
+                    
                     Spacer()
-
+                    
                     Button("완료") {
                         if routineToEdit == nil {
                             RoutineAPI.postRoutine(title: taskText, category: categoryText, weekdays: selectedDays) { result in
@@ -73,20 +73,31 @@ struct AddTaskView: View {
                 }
                 .padding(.horizontal, 20)
             }
-
+            
             // MARK: - 카테고리 입력
-            TextField("# 카테고리를 입력하세요.", text: $categoryText)
-                .foregroundColor(.blue)
-                .bodytext()
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .focused($isFocusedCategory)
-                .onChange(of: isFocusedCategory) { oldValue, newValue in
-                    if oldValue == true && newValue == false {
-                        normalizeCategory()
+            VStack{
+                TextField("# 카테고리를 입력하세요.", text: $categoryText)
+                    .foregroundColor(.blue)
+                    .bodytext()
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .focused($isFocusedCategory)
+                    .onChange(of: isFocusedCategory) { oldValue, newValue in
+                        if oldValue == true && newValue == false {
+                            normalizeCategory()
+                        }
                     }
-                }
-
+                    .overlay(
+                        Rectangle()
+                            .frame(height: 1)
+                            .frame(width: 168)
+                            .foregroundColor(Color.gray.opacity(0.5))
+                            .padding(.horizontal, 20),
+                        alignment: .bottomLeading
+                    )
+            }
+            
+            
             // MARK: - 루틴 텍스트 입력
             TextField("할 일을 입력하세요.", text: $taskText)
                 .textInputAutocapitalization(.never)
@@ -107,7 +118,7 @@ struct AddTaskView: View {
                     isFocusedTask = true
                 }
                 .padding(.bottom, 20)
-
+            
             // MARK: - 요일 선택
             HStack {
                 ForEach(DATES.indices, id: \.self) { index in
@@ -153,5 +164,3 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
-
-
