@@ -466,11 +466,18 @@ struct MainView: View {
     func endTimer() {
         if let r = activeRoutine,
            let idx = vm.routines.firstIndex(where: { $0.id == r.id }) {
-            vm.routines[idx].elapsedTime += timerValue
+            let used = timerValue
+            timer?.invalidate(); timer = nil
+            timerValue = 0
+            timerRunning = false
+            Task { @MainActor in
+                vm.routines[idx].elapsedTime += used  // ← 메인에서 갱신
+            }
+        } else {
+            timer?.invalidate(); timer = nil
+            timerValue = 0
+            timerRunning = false
         }
-        timer?.invalidate(); timer = nil
-        timerValue = 0
-        timerRunning = false
     }
 
     func timerString(from t: TimeInterval) -> String {
