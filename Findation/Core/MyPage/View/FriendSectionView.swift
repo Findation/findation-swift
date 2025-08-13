@@ -133,7 +133,7 @@ private struct RequestRowIncoming: View {
             Avatar()
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(counter.username).font(.headline)
+                Text(counter.nickname).font(.headline)
                 Text("친구 요청").font(.caption).foregroundColor(.gray)
             }
 
@@ -186,7 +186,7 @@ private struct RequestRowOutgoing: View {
         HStack(spacing: 12) {
             Avatar()
             VStack(alignment: .leading, spacing: 2) {
-                Text(counter.username).font(.headline)
+                Text(counter.nickname).font(.headline)
                 Text("수락 대기중").font(.caption).foregroundColor(.orange)
             }
             Spacer()
@@ -216,7 +216,7 @@ private struct FriendRow: View {
         HStack(spacing: 12) {
             Avatar()
             VStack(alignment: .leading, spacing: 2) {
-                Text(counter.username).font(.headline)
+                Text(counter.nickname).font(.headline)
                 Text("친구").font(.caption).foregroundColor(.green)
             }
             Spacer()

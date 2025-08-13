@@ -80,5 +80,19 @@ enum FriendsAPI {
                throw URLError(.badServerResponse)
            }
     }
+    
+    static func getFriendsList() async throws -> [SearchUser] {
+        let token = KeychainHelper.load(forKey: "accessToken") ?? ""
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(token)"]
+        
+        let decoder = DateDecoderFactory.iso8601WithFractionalSecondsDecoder()
+        
+        return try await AF.request(API.Friends.friendsList,
+                            method: .get,
+                            headers: headers)
+            .validate(statusCode: 200..<300)
+            .serializingDecodable([SearchUser].self, decoder: decoder)
+            .value
+    }
 }
 
