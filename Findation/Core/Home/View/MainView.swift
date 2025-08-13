@@ -464,19 +464,24 @@ struct MainView: View {
     }
 
     func endTimer() {
-        if let r = activeRoutine,
-           let idx = vm.routines.firstIndex(where: { $0.id == r.id }) {
-            let used = timerValue
-            timer?.invalidate(); timer = nil
-            timerValue = 0
-            timerRunning = false
-            Task { @MainActor in
-                vm.routines[idx].elapsedTime += used  // ← 메인에서 갱신
-            }
-        } else {
-            timer?.invalidate(); timer = nil
-            timerValue = 0
-            timerRunning = false
+        // 스냅샷 먼저
+        let used = timerValue
+        let routineId = activeRoutine?.id
+
+        // 타이머 정리
+        timer?.invalidate()
+        timer = nil
+        timerValue = 0
+        timerRunning = false
+
+        // 아이디 없으면 끝
+        guard let id = routineId else { return }
+
+        // VM에 누적 + 저장까지(메인에서)
+        Task { @MainActor in
+            vm.incrementElapsed(for: id, by: used)
+            // 필요하면 여기서 activeRoutine nil 처리:
+            // self.activeRoutine = nil
         }
     }
 
