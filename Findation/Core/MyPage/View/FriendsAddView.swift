@@ -27,7 +27,6 @@ struct FriendAddView: View {
                         Task {
                             isLoading = true
                             searchResults = try await UserAPI.searchUser(nickname: nickname)
-                            showAlert = true
                             isLoading = false
                         }
                     }) {
@@ -76,6 +75,7 @@ struct FriendAddView: View {
                             Task {
                                 print("clicked")
                                 try await FriendsAPI.addFriend(friendID: friend.id)
+                                showAlert = true
                             }
                         }) {
                             Text("+ 추가하기")
